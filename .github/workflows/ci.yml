@@ -27,14 +27,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven
-        run: ./mvnw -B clean install
-
-      - name: Run tests
-        run: ./mvnw -B test
-
-      - name: Generate coverage report
-        run: ./mvnw -B verify
+      - name: Build and verify
+        run: ./mvnw -B clean verify
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.java == '17'
