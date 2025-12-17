@@ -23,7 +23,9 @@ import com.github.lukaspestalozzi.functional.ListOps;
 @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 2, jvmArgs = {"-Xms2G", "-Xmx2G"})
+@Fork(
+    value = 2,
+    jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3, time = 2)
 @Measurement(iterations = 5, time = 2)
 public class ListOpsBenchmark {
@@ -77,10 +79,7 @@ public class ListOpsBenchmark {
   @Benchmark
   public void streams_chainedMapFilter(Blackhole bh) {
     List<Integer> result =
-        testData.stream()
-            .map(n -> n * 2)
-            .filter(n -> n % 4 == 0)
-            .collect(Collectors.toList());
+        testData.stream().map(n -> n * 2).filter(n -> n % 4 == 0).collect(Collectors.toList());
     bh.consume(result);
   }
 
@@ -93,10 +92,7 @@ public class ListOpsBenchmark {
   @Benchmark
   public void streams_chainedFilterMap(Blackhole bh) {
     List<Integer> result =
-        testData.stream()
-            .filter(n -> n % 2 == 0)
-            .map(n -> n * 3)
-            .collect(Collectors.toList());
+        testData.stream().filter(n -> n % 2 == 0).map(n -> n * 3).collect(Collectors.toList());
     bh.consume(result);
   }
 
