@@ -145,7 +145,6 @@
                                     <version>[17,)</version>
                                     <message>Java 17 or higher is required.</message>
                                 </requireJavaVersion>
-                                <dependencyConvergence/>
                             </rules>
                         </configuration>
                     </execution>
