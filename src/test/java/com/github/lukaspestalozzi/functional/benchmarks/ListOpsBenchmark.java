@@ -1,13 +1,14 @@
 package com.github.lukaspestalozzi.functional.benchmarks;
 
-import com.github.lukaspestalozzi.functional.ListOps;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+
+import com.github.lukaspestalozzi.functional.ListOps;
 
 /**
  * JMH Benchmarks for ListOps operations.
