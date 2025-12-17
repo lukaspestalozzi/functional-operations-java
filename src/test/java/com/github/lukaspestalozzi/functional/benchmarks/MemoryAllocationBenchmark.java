@@ -1,19 +1,20 @@
 package com.github.lukaspestalozzi.functional.benchmarks;
 
-import com.github.lukaspestalozzi.functional.ListOps;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+
+import com.github.lukaspestalozzi.functional.ListOps;
 
 /**
  * Memory allocation benchmarks for ListOps operations.
  *
  * <p>This benchmark specifically measures memory allocation per operation using JMH's GC profiler.
- * Run with: mvn clean test-compile -Pbenchmark && mvn exec:exec -Pbenchmark
- * -Djmh.args="-prof gc"
+ * Run with: mvn clean test-compile -Pbenchmark && mvn exec:exec -Pbenchmark -Djmh.args="-prof gc"
  *
  * <p>Key metrics to monitor:
  *
@@ -79,10 +80,7 @@ public class MemoryAllocationBenchmark {
   @Benchmark
   public void streams_chain_allocation(Blackhole bh) {
     List<Integer> result =
-        testData.stream()
-            .map(n -> n * 2)
-            .filter(n -> n % 4 == 0)
-            .collect(Collectors.toList());
+        testData.stream().map(n -> n * 2).filter(n -> n % 4 == 0).collect(Collectors.toList());
     bh.consume(result);
   }
 }
