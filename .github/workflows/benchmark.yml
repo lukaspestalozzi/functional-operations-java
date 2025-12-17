@@ -29,13 +29,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Compile project
-        run: ./mvnw -B clean test-compile -Pbenchmark
+      - name: Build benchmark JAR
+        run: ./mvnw -B clean package -Pbenchmark -DskipTests
 
       - name: Run benchmarks (quick mode)
-        run: |
-          ./mvnw -B exec:exec -Pbenchmark \
-            -Dexec.args="-classpath %classpath org.openjdk.jmh.Main .* -rf json -rff target/jmh-result.json -wi 2 -i 3 -f 1"
+        run: java -jar target/benchmarks.jar .* -rf json -rff target/jmh-result.json -wi 2 -i 3 -f 1
         continue-on-error: true
 
       - name: Display benchmark summary
@@ -85,7 +83,7 @@ jobs:
               comment += '1. Download the artifacts to view detailed results\n';
               comment += '2. Check for any significant performance regressions\n';
               comment += '3. Compare with baseline metrics\n\n';
-              comment += '💡 **Tip**: Run locally with `./mvnw clean test-compile -Pbenchmark && ./mvnw exec:exec -Pbenchmark` for full results.';
+              comment += '💡 **Tip**: Run locally with `./run-benchmarks.sh` for full results.';
             } else {
               comment += '⚠️ Benchmarks encountered an issue.\n\n';
               comment += 'Please check the workflow logs for details.';
@@ -114,13 +112,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Compile project
-        run: ./mvnw -B clean test-compile -Pbenchmark
+      - name: Build benchmark JAR
+        run: ./mvnw -B clean package -Pbenchmark -DskipTests
 
       - name: Run memory allocation benchmarks
-        run: |
-          ./mvnw -B exec:exec -Pbenchmark \
-            -Dexec.args="-classpath %classpath org.openjdk.jmh.Main MemoryAllocation.* -prof gc -rf json -rff target/jmh-memory-result.json"
+        run: java -jar target/benchmarks.jar MemoryAllocation.* -prof gc -rf json -rff target/jmh-memory-result.json
         continue-on-error: true
 
       - name: Upload memory benchmark results
