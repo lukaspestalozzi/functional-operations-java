@@ -1,6 +1,7 @@
 # Functional Operations Java
 
 [![CI](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/ci.yml/badge.svg)](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/ci.yml)
+[![Benchmarks](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/benchmark.yml/badge.svg)](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/benchmark.yml)
 [![codecov](https://codecov.io/gh/lukaspestalozzi/functional-operations-java/branch/main/graph/badge.svg)](https://codecov.io/gh/lukaspestalozzi/functional-operations-java)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -9,7 +10,9 @@ A Java library providing functional operations for Java 17 and above, implemente
 ## Features
 
 - **Java 17+**: Built for modern Java with support for the latest language features
+- **High Performance**: Implemented with for loops for optimal speed and memory efficiency
 - **Functional Programming**: Provides functional utilities and operations
+- **Performance Tested**: Comprehensive JMH benchmarks with regression tracking
 - **Test-Driven Development**: Built following TDD principles with comprehensive test coverage
 - **High Code Quality**: Enforces 80% code coverage minimum
 - **Well Documented**: Comprehensive JavaDoc documentation
@@ -122,6 +125,33 @@ The Spotless plugin is configured to:
 - Ensure files end with newline
 
 **Note**: The `verify` phase automatically runs `spotless:check`, so the build will fail if code is not properly formatted.
+
+### Performance Benchmarks
+
+Performance is a critical aspect of this library. We use JMH (Java Microbenchmark Harness) to measure:
+
+- **Throughput**: Operations per second
+- **Memory Allocation**: Bytes allocated per operation
+- **Comparison**: Performance vs Java Streams API
+
+Run benchmarks:
+
+```bash
+# Quick benchmark
+./run-benchmarks.sh --quick
+
+# Full benchmark suite
+./run-benchmarks.sh
+
+# With memory profiling
+./run-benchmarks.sh --gc
+```
+
+See [BENCHMARKS.md](BENCHMARKS.md) for detailed documentation on:
+- Running and interpreting benchmarks
+- CI/CD integration
+- Performance KPIs and regression thresholds
+- Advanced profiling techniques
 
 ### Code Quality
 

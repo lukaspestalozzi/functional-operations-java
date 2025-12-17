@@ -1,0 +1,133 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or commit to benchmark'
+        required: false
+        default: 'main'
+
+jobs:
+  benchmark:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.inputs.ref || github.ref }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Compile project
+        run: ./mvnw -B clean test-compile -Pbenchmark
+
+      - name: Run benchmarks (quick mode)
+        run: |
+          ./mvnw -B exec:exec -Pbenchmark \
+            -Dexec.args="-classpath %classpath org.openjdk.jmh.Main .* -rf json -rff target/jmh-result.json -wi 2 -i 3 -f 1"
+        continue-on-error: true
+
+      - name: Display benchmark summary
+        if: always()
+        run: |
+          if [ -f target/jmh-result.json ]; then
+            echo "## Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Benchmark completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "Full results are available in the artifacts." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Quick Stats" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat target/jmh-result.json | head -20
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Benchmark results not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-pr-${{ github.event.pull_request.number || github.run_id }}
+          path: |
+            target/jmh-result.json
+            target/*.log
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 🚀 Performance Benchmark Results\n\n';
+
+            if (fs.existsSync('target/jmh-result.json')) {
+              comment += '✅ Benchmarks completed successfully!\n\n';
+              comment += '📊 Results have been uploaded as artifacts.\n\n';
+              comment += '### How to interpret results:\n';
+              comment += '- **Throughput**: Higher is better (ops/second)\n';
+              comment += '- **Average Time**: Lower is better (microseconds)\n';
+              comment += '- Compare `listOps_*` vs `streams_*` methods\n\n';
+              comment += '### Next Steps:\n';
+              comment += '1. Download the artifacts to view detailed results\n';
+              comment += '2. Check for any significant performance regressions\n';
+              comment += '3. Compare with baseline metrics\n\n';
+              comment += '💡 **Tip**: Run locally with `./mvnw clean test-compile -Pbenchmark && ./mvnw exec:exec -Pbenchmark` for full results.';
+            } else {
+              comment += '⚠️ Benchmarks encountered an issue.\n\n';
+              comment += 'Please check the workflow logs for details.';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Optional: Run with GC profiler for memory allocation tracking
+  memory-benchmark:
+    name: Memory Allocation Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Compile project
+        run: ./mvnw -B clean test-compile -Pbenchmark
+
+      - name: Run memory allocation benchmarks
+        run: |
+          ./mvnw -B exec:exec -Pbenchmark \
+            -Dexec.args="-classpath %classpath org.openjdk.jmh.Main MemoryAllocation.* -prof gc -rf json -rff target/jmh-memory-result.json"
+        continue-on-error: true
+
+      - name: Upload memory benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-benchmark-results-${{ github.run_id }}
+          path: |
+            target/jmh-memory-result.json
+          retention-days: 30
