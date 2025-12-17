@@ -52,6 +52,7 @@
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
 
         <!-- Code coverage -->
         <jacoco.coverage.minimum>0.80</jacoco.coverage.minimum>
@@ -188,6 +189,57 @@
                         <id>attach-sources</id>
                         <goals>
                             <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Spotless Plugin for code formatting -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless-maven-plugin.version}</version>
+                <configuration>
+                    <java>
+                        <!-- Use Google Java Format -->
+                        <googleJavaFormat>
+                            <version>1.19.1</version>
+                            <style>GOOGLE</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+                        <!-- Remove unused imports -->
+                        <removeUnusedImports/>
+                        <!-- Format imports -->
+                        <importOrder>
+                            <order>java,javax,org,com,</order>
+                        </importOrder>
+                        <!-- Ensure files end with newline -->
+                        <endWithNewline/>
+                        <!-- Trim trailing whitespace -->
+                        <trimTrailingWhitespace/>
+                    </java>
+                    <pom>
+                        <!-- Sort POM elements -->
+                        <sortPom>
+                            <expandEmptyElements>false</expandEmptyElements>
+                        </sortPom>
+                    </pom>
+                    <markdown>
+                        <includes>
+                            <include>**/*.md</include>
+                        </includes>
+                        <!-- Ensure files end with newline -->
+                        <endWithNewline/>
+                        <!-- Trim trailing whitespace -->
+                        <trimTrailingWhitespace/>
+                    </markdown>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -96,6 +96,33 @@ To check coverage:
 ./mvnw verify
 ```
 
+### Code Formatting
+
+The project uses [Spotless](https://github.com/diffplug/spotless) with Google Java Format for consistent code formatting.
+
+Check if code is formatted correctly:
+
+```bash
+./mvnw spotless:check
+```
+
+Automatically format all code:
+
+```bash
+./mvnw spotless:apply
+```
+
+The Spotless plugin is configured to:
+- Format Java files using Google Java Format style
+- Sort and organize imports (java, javax, org, com)
+- Remove unused imports
+- Format POM files
+- Format Markdown files
+- Trim trailing whitespace
+- Ensure files end with newline
+
+**Note**: The `verify` phase automatically runs `spotless:check`, so the build will fail if code is not properly formatted.
+
 ### Code Quality
 
 The project uses:
@@ -104,6 +131,7 @@ The project uses:
 - **AssertJ**: Fluent assertion library for readable tests
 - **Mockito**: Mocking framework for unit tests
 - **JaCoCo**: Code coverage tool
+- **Spotless**: Code formatting and style enforcement
 
 ### CI/CD
 
