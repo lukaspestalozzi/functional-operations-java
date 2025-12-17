@@ -96,20 +96,19 @@ echo "  GC Profiler: $GC_PROFILER"
 echo "  Quick mode: $QUICK_MODE"
 echo ""
 
-# Compile the project
-echo -e "${BLUE}Step 1: Compiling project...${NC}"
-./mvnw -B clean test-compile -Pbenchmark
+# Build benchmark JAR
+echo -e "${BLUE}Step 1: Building benchmark JAR...${NC}"
+./mvnw -B clean package -Pbenchmark -DskipTests
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Compilation successful${NC}"
+    echo -e "${GREEN}✓ Build successful${NC}"
 else
-    echo -e "${RED}✗ Compilation failed${NC}"
+    echo -e "${RED}✗ Build failed${NC}"
     exit 1
 fi
 echo ""
 
 # Build JMH arguments
-JMH_ARGS="-classpath %classpath org.openjdk.jmh.Main"
-JMH_ARGS="$JMH_ARGS .* -rf json -rff target/jmh-result.json"
+JMH_ARGS=".* -rf json -rff target/jmh-result.json"
 JMH_ARGS="$JMH_ARGS -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS -t $THREADS"
 
 if [ "$GC_PROFILER" = true ]; then
@@ -121,7 +120,7 @@ echo -e "${BLUE}Step 2: Running benchmarks...${NC}"
 echo "This may take several minutes..."
 echo ""
 
-./mvnw -B exec:exec -Pbenchmark -Dexec.args="$JMH_ARGS"
+java -jar target/benchmarks.jar $JMH_ARGS
 
 if [ $? -eq 0 ]; then
     echo ""
