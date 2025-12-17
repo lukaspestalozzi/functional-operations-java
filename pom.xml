@@ -325,7 +325,7 @@
                         <configuration>
                             <source>17</source>
                             <show>public</show>
-                            <failOnError>false</failOnError>
+                            <failOnError>true</failOnError>
                         </configuration>
                     </plugin>
 
