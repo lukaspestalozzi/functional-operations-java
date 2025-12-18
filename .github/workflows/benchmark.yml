@@ -11,6 +11,10 @@ on:
         required: false
         default: 'main'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   benchmark:
     name: Run Performance Benchmarks
@@ -66,6 +70,7 @@ jobs:
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && always()
         uses: actions/github-script@v7
+        continue-on-error: true
         with:
           script: |
             const fs = require('fs');
@@ -89,12 +94,16 @@ jobs:
               comment += 'Please check the workflow logs for details.';
             }
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              core.warning(`Could not create PR comment: ${error.message}`);
+            }
 
   # Optional: Run with GC profiler for memory allocation tracking
   memory-benchmark:
