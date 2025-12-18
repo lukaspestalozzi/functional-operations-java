@@ -50,6 +50,15 @@ GitHub Actions runs `./mvnw -B clean verify` on:
 - Ubuntu, Windows, macOS
 - Java 17 and 21
 
+## Workflow
+
+**Always verify the build before pushing:**
+```bash
+mvn clean verify -Dmaven.resolver.transport=wagon
+```
+
+This ensures CI won't fail. Never push code that doesn't build locally.
+
 ## Proxy Workaround (Claude Code Environment)
 
 If Maven fails with DNS resolution errors in restricted network environments:
