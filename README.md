@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/ci.yml/badge.svg)](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/ci.yml)
 [![Benchmarks](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/benchmark.yml/badge.svg)](https://github.com/lukaspestalozzi/functional-operations-java/actions/workflows/benchmark.yml)
-[![codecov](https://codecov.io/gh/lukaspestalozzi/functional-operations-java/branch/main/graph/badge.svg)](https://codecov.io/gh/lukaspestalozzi/functional-operations-java)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Java library providing functional operations for Java 17 and above, implemented with normal for loops for performance.  Designed for easy usage and performance while keeping memory footprint to a minimum.
