@@ -11,47 +11,49 @@ Reference specification for the functional-operations-java library.
 
 ## ListOps
 
-Functional operations for `java.util.List`.
+Functional operations for `java.util.List`. All methods accept any `Iterable` for maximum flexibility.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `map` | `<T,R> List<R> map(List<T>, Function<T,R>)` | Transform each element |
-| `filter` | `<T> List<T> filter(List<T>, Predicate<T>)` | Keep elements matching predicate |
-| `reduce` | `<T,R> R reduce(List<T>, R, BiFunction<R,T,R>)` | Fold to single value |
-| `flatMap` | `<T,R> List<R> flatMap(List<T>, Function<T,List<R>>)` | Map and flatten |
-| `find` | `<T> Optional<T> find(List<T>, Predicate<T>)` | First matching element |
-| `any` | `<T> boolean any(List<T>, Predicate<T>)` | Any element matches |
-| `all` | `<T> boolean all(List<T>, Predicate<T>)` | All elements match |
-| `take` | `<T> List<T> take(List<T>, int)` | First n elements |
-| `drop` | `<T> List<T> drop(List<T>, int)` | Skip first n elements |
-| `zip` | `<A,B,R> List<R> zip(List<A>, List<B>, BiFunction<A,B,R>)` | Combine two lists |
-| `distinct` | `<T> List<T> distinct(List<T>)` | Remove duplicates (preserve order) |
-| `reverse` | `<T> List<T> reverse(List<T>)` | Reverse order |
-| `partition` | `<T> List<List<T>> partition(List<T>, Predicate<T>)` | Split by predicate |
-| `mapFilter` | `<T,R> List<R> mapFilter(List<T>, Function<T,R>, Predicate<R>)` | Map then filter |
-| `filterMap` | `<T,R> List<R> filterMap(List<T>, Predicate<T>, Function<T,R>)` | Filter then map |
+| `map` | `<T,R> List<R> map(Iterable<T>, Function<T,R>)` | Transform each element |
+| `filter` | `<T> List<T> filter(Iterable<T>, Predicate<T>)` | Keep elements matching predicate |
+| `filterAll` | `<T> List<T> filterAll(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
+| `reduce` | `<T,R> R reduce(Iterable<T>, R, BiFunction<R,T,R>)` | Fold to single value |
+| `flatMap` | `<T,R> List<R> flatMap(Iterable<T>, Function<T,Iterable<R>>)` | Map and flatten |
+| `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | First matching element |
+| `any` | `<T> boolean any(Iterable<T>, Predicate<T>)` | Any element matches |
+| `all` | `<T> boolean all(Iterable<T>, Predicate<T>)` | All elements match |
+| `take` | `<T> List<T> take(Iterable<T>, int)` | First n elements |
+| `drop` | `<T> List<T> drop(Iterable<T>, int)` | Skip first n elements |
+| `zip` | `<A,B,R> List<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
+| `distinct` | `<T> List<T> distinct(Iterable<T>)` | Remove duplicates (preserve order) |
+| `reverse` | `<T> List<T> reverse(Iterable<T>)` | Reverse order |
+| `partition` | `<T> List<List<T>> partition(Iterable<T>, Predicate<T>)` | Split by predicate |
+| `mapFilter` | `<T,R> List<R> mapFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
+| `filterMap` | `<T,R> List<R> filterMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
 
 ## SetOps
 
-Functional operations for `java.util.Set`. Same methods as ListOps but returns `Set`.
+Functional operations for `java.util.Set`. Same methods as ListOps but returns `Set`. All methods accept any `Iterable` for maximum flexibility.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `map` | `<T,R> Set<R> map(Set<T>, Function<T,R>)` | Transform each element |
-| `filter` | `<T> Set<T> filter(Set<T>, Predicate<T>)` | Keep elements matching predicate |
-| `reduce` | `<T,R> R reduce(Set<T>, R, BiFunction<R,T,R>)` | Fold to single value |
-| `flatMap` | `<T,R> Set<R> flatMap(Set<T>, Function<T,Set<R>>)` | Map and flatten |
-| `find` | `<T> Optional<T> find(Set<T>, Predicate<T>)` | Any matching element |
-| `any` | `<T> boolean any(Set<T>, Predicate<T>)` | Any element matches |
-| `all` | `<T> boolean all(Set<T>, Predicate<T>)` | All elements match |
-| `take` | `<T> Set<T> take(Set<T>, int)` | Take n elements |
-| `drop` | `<T> Set<T> drop(Set<T>, int)` | Drop n elements |
-| `zip` | `<A,B,R> Set<R> zip(Set<A>, Set<B>, BiFunction<A,B,R>)` | Combine two sets |
-| `distinct` | `<T> Set<T> distinct(Set<T>)` | Identity (sets are distinct) |
-| `reverse` | `<T> Set<T> reverse(Set<T>)` | Identity (sets unordered) |
-| `partition` | `<T> List<Set<T>> partition(Set<T>, Predicate<T>)` | Split by predicate |
-| `mapFilter` | `<T,R> Set<R> mapFilter(Set<T>, Function<T,R>, Predicate<R>)` | Map then filter |
-| `filterMap` | `<T,R> Set<R> filterMap(Set<T>, Predicate<T>, Function<T,R>)` | Filter then map |
+| `map` | `<T,R> Set<R> map(Iterable<T>, Function<T,R>)` | Transform each element |
+| `filter` | `<T> Set<T> filter(Iterable<T>, Predicate<T>)` | Keep elements matching predicate |
+| `filterAll` | `<T> Set<T> filterAll(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
+| `reduce` | `<T,R> R reduce(Iterable<T>, R, BiFunction<R,T,R>)` | Fold to single value |
+| `flatMap` | `<T,R> Set<R> flatMap(Iterable<T>, Function<T,Iterable<R>>)` | Map and flatten |
+| `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | Any matching element |
+| `any` | `<T> boolean any(Iterable<T>, Predicate<T>)` | Any element matches |
+| `all` | `<T> boolean all(Iterable<T>, Predicate<T>)` | All elements match |
+| `take` | `<T> Set<T> take(Iterable<T>, int)` | Take n elements |
+| `drop` | `<T> Set<T> drop(Iterable<T>, int)` | Drop n elements |
+| `zip` | `<A,B,R> Set<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
+| `distinct` | `<T> Set<T> distinct(Iterable<T>)` | Remove duplicates (identity for sets) |
+| `reverse` | `<T> Set<T> reverse(Iterable<T>)` | Identity (sets unordered) |
+| `partition` | `<T> List<Set<T>> partition(Iterable<T>, Predicate<T>)` | Split by predicate |
+| `mapFilter` | `<T,R> Set<R> mapFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
+| `filterMap` | `<T,R> Set<R> filterMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
 
 **Note**: Uses `LinkedHashSet` internally to preserve insertion order where applicable.
 

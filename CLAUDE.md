@@ -63,6 +63,11 @@ mvn clean verify -Dmaven.resolver.transport=wagon
 
 Never push code that doesn't build locally.
 
+**Always update documentation after implementing features:**
+- Update `README.md` with new methods in the features list
+- Update `requirements.md` with method signatures and descriptions
+- Keep method counts accurate in project structure section
+
 ## Proxy Workaround (Claude Code Environment)
 
 If Maven fails with DNS resolution errors:
