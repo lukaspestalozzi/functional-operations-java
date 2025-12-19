@@ -6,12 +6,15 @@ Project guidance for AI assistants working on this codebase.
 
 Functional operations library for Java 17+. Simple for loops instead of streams for performance.
 
-**One source file**: `src/main/java/com/github/lukaspestalozzi/functional/ListOps.java`
+**Source files:**
+- `src/main/java/com/github/lukaspestalozzi/functional/ListOps.java` - List operations
+- `src/main/java/com/github/lukaspestalozzi/functional/SetOps.java` - Set operations
+- `src/main/java/com/github/lukaspestalozzi/functional/MapOps.java` - Map operations
 
 ## Build Commands
 
 ```bash
-# Build and test (the one command you need)
+# Build and test
 mvn clean verify
 
 # Fix formatting violations
@@ -31,17 +34,18 @@ mvn spotless:apply
 
 Simple is better than complex. Explicit is better than implicit.
 
-- Utility class with static methods only
+- Utility classes with static methods only
 - For loops over streams (performance)
-- New lists returned, inputs never modified
+- New collections returned, inputs never modified
 - Null checks with clear error messages
 - 80% test coverage minimum
+- One test file per method (e.g., `ListOpsMapTest.java`)
 
 ## Testing
 
 - JUnit 5 + AssertJ
 - Given/When/Then structure
-- Tests live in `src/test/java/`
+- Tests in `src/test/java/` with pattern `{Class}{Method}Test.java`
 - Benchmarks compare against Java Streams
 
 ## CI Pipeline
@@ -57,32 +61,14 @@ GitHub Actions runs `./mvnw -B clean verify` on:
 mvn clean verify -Dmaven.resolver.transport=wagon
 ```
 
-This ensures CI won't fail. Never push code that doesn't build locally.
+Never push code that doesn't build locally.
 
 ## Proxy Workaround (Claude Code Environment)
 
-If Maven fails with DNS resolution errors in restricted network environments:
+If Maven fails with DNS resolution errors:
 
 ```bash
-# Use wagon transport with settings.xml proxy configuration
 mvn clean verify -Dmaven.resolver.transport=wagon
 ```
 
-Create `~/.m2/settings.xml` with proxy settings extracted from environment:
-```xml
-<settings>
-  <proxies>
-    <proxy>
-      <id>https-proxy</id>
-      <active>true</active>
-      <protocol>https</protocol>
-      <host>${PROXY_HOST}</host>
-      <port>${PROXY_PORT}</port>
-      <username>${PROXY_USER}</username>
-      <password>${PROXY_PASS}</password>
-    </proxy>
-  </proxies>
-</settings>
-```
-
-Extract credentials from `$HTTP_PROXY` environment variable if set.
+Create `~/.m2/settings.xml` with proxy settings if needed.
