@@ -7,7 +7,7 @@ High-performance functional operations for Java collections. Uses simple for loo
 
 ## Features
 
-- **ListOps**: map, filter, filterAll, reduce, flatMap, find, any, all, take, drop, zip, distinct, reverse, partition, mapFilter, filterMap
+- **ListOps**: map, filter, filter, reduce, flatMap, find, any, all, take, drop, zip, distinct, reverse, partition, mapFilter, filterMap
 - **SetOps**: Same operations for Sets (all methods accept any Iterable as input)
 - **MapOps**: mapValues, mapKeys, filter, filterKeys, filterValues, reduce, find, any, all, partition, merge, invert, flatMapValues, getOrCompute, take, drop
 
@@ -21,7 +21,7 @@ import com.github.lukaspestalozzi.functional.MapOps;
 // List operations
 List<Integer> doubled = ListOps.map(List.of(1, 2, 3), x -> x * 2);        // [2, 4, 6]
 List<Integer> evens = ListOps.filter(List.of(1, 2, 3, 4), x -> x % 2 == 0); // [2, 4]
-List<Integer> evenAndBig = ListOps.filterAll(List.of(1, 2, 3, 4, 5, 6),
+List<Integer> evenAndBig = ListOps.filter(List.of(1, 2, 3, 4, 5, 6),
     x -> x % 2 == 0, x -> x > 3);                                           // [4, 6]
 int sum = ListOps.reduce(List.of(1, 2, 3), 0, Integer::sum);               // 6
 

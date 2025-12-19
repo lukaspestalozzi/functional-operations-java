@@ -49,7 +49,7 @@ class ListOpsFilterTest {
   void testFilterNullPredicate() {
     List<Integer> numbers = List.of(1, 2, 3);
 
-    assertThatThrownBy(() -> ListOps.filter(numbers, null))
+    assertThatThrownBy(() -> ListOps.filter(numbers, (Predicate<Integer>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("predicate");
   }
@@ -61,7 +61,7 @@ class ListOpsFilterTest {
     Predicate<Integer> isEven = n -> n % 2 == 0;
     Predicate<Integer> greaterThan4 = n -> n > 4;
 
-    List<Integer> result = ListOps.filterAll(numbers, isEven, greaterThan4);
+    List<Integer> result = ListOps.filter(numbers, isEven, greaterThan4);
 
     assertThat(result).containsExactly(6, 8, 10);
   }
@@ -72,7 +72,7 @@ class ListOpsFilterTest {
     List<Integer> numbers = List.of(1, 2, 3);
 
     @SuppressWarnings("unchecked")
-    List<Integer> result = ListOps.filterAll(numbers, new Predicate[0]);
+    List<Integer> result = ListOps.filter(numbers, new Predicate[0]);
 
     assertThat(result).containsExactly(1, 2, 3);
   }
@@ -83,7 +83,7 @@ class ListOpsFilterTest {
     List<Integer> numbers = List.of(1, 2, 3, 4, 5);
     Predicate<Integer> isOdd = n -> n % 2 != 0;
 
-    List<Integer> result = ListOps.filterAll(numbers, isOdd);
+    List<Integer> result = ListOps.filter(numbers, isOdd);
 
     assertThat(result).containsExactly(1, 3, 5);
   }
@@ -94,7 +94,7 @@ class ListOpsFilterTest {
     List<Integer> numbers = List.of(1, 2, 3);
     Predicate<Integer> isEven = n -> n % 2 == 0;
 
-    assertThatThrownBy(() -> ListOps.filterAll(numbers, isEven, null))
+    assertThatThrownBy(() -> ListOps.filter(numbers, isEven, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("predicate");
   }
@@ -104,7 +104,7 @@ class ListOpsFilterTest {
   void testFilterAllVarargsNullArray() {
     List<Integer> numbers = List.of(1, 2, 3);
 
-    assertThatThrownBy(() -> ListOps.filterAll(numbers, (Predicate<Integer>[]) null))
+    assertThatThrownBy(() -> ListOps.filter(numbers, (Predicate<Integer>[]) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("predicates");
   }
