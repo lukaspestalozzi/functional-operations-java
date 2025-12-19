@@ -56,7 +56,7 @@ class SetOpsDropTest {
   void testDropNullSet() {
     assertThatThrownBy(() -> SetOps.drop(null, 3))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

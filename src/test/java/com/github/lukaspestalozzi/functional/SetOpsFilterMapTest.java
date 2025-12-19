@@ -46,7 +46,7 @@ class SetOpsFilterMapTest {
   void testFilterMapNullSet() {
     assertThatThrownBy(() -> SetOps.filterMap(null, n -> true, n -> n))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

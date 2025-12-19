@@ -36,6 +36,6 @@ class SetOpsReverseTest {
   void testReverseNullSet() {
     assertThatThrownBy(() -> SetOps.reverse(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 }

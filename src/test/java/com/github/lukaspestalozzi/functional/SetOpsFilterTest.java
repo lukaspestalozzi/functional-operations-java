@@ -41,7 +41,7 @@ class SetOpsFilterTest {
 
     assertThatThrownBy(() -> SetOps.filter(null, alwaysTrue))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

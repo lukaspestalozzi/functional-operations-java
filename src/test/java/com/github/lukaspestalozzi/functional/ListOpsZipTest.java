@@ -75,7 +75,7 @@ class ListOpsZipTest {
 
     assertThatThrownBy(() -> ListOps.zip(null, b, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("listA");
+        .hasMessageContaining("iterableA");
   }
 
   @Test
@@ -85,7 +85,7 @@ class ListOpsZipTest {
 
     assertThatThrownBy(() -> ListOps.zip(a, null, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("listB");
+        .hasMessageContaining("iterableB");
   }
 
   @Test

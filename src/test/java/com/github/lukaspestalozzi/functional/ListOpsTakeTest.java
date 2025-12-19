@@ -56,7 +56,7 @@ class ListOpsTakeTest {
   void testTakeNullList() {
     assertThatThrownBy(() -> ListOps.take(null, 3))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

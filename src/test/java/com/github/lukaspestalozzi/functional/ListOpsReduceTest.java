@@ -46,7 +46,7 @@ class ListOpsReduceTest {
   void testReduceNullList() {
     assertThatThrownBy(() -> ListOps.reduce(null, 0, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

@@ -57,7 +57,7 @@ class SetOpsFlatMapTest {
   void testFlatMapNullSet() {
     assertThatThrownBy(() -> SetOps.flatMap(null, Function.identity()))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

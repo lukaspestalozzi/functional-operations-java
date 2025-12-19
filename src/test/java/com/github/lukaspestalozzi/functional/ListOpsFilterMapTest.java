@@ -46,7 +46,7 @@ class ListOpsFilterMapTest {
   void testFilterMapNullList() {
     assertThatThrownBy(() -> ListOps.filterMap(null, n -> true, n -> n))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

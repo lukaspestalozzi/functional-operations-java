@@ -46,6 +46,6 @@ class ListOpsReverseTest {
   void testReverseNullList() {
     assertThatThrownBy(() -> ListOps.reverse(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 }

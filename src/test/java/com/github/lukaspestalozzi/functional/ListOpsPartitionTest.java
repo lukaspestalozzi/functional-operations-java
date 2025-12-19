@@ -62,7 +62,7 @@ class ListOpsPartitionTest {
   void testPartitionNullList() {
     assertThatThrownBy(() -> ListOps.partition(null, n -> true))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test
