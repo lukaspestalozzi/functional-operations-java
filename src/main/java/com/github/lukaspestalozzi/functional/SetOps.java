@@ -91,6 +91,49 @@ public final class SetOps {
   }
 
   /**
+   * Filters elements in the input iterable based on multiple predicates (AND logic).
+   *
+   * <p>Elements must satisfy ALL predicates to be included in the result.
+   *
+   * <p>Example usage:
+   *
+   * <pre>{@code
+   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+   * Set<Integer> result = SetOps.filterAll(numbers,
+   *     n -> n % 2 == 0,  // even
+   *     n -> n > 4);      // greater than 4
+   * // Result: {6, 8, 10}
+   * }</pre>
+   *
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to filter
+   * @param predicates the conditions that elements must all satisfy
+   * @return a new set containing only elements that satisfy all predicates
+   * @throws NullPointerException if iterable is null or any predicate is null
+   */
+  @SafeVarargs
+  public static <T> Set<T> filterAll(
+      Iterable<? extends T> iterable, Predicate<? super T>... predicates) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
+    Objects.requireNonNull(predicates, "predicates must not be null");
+    for (Predicate<? super T> predicate : predicates) {
+      Objects.requireNonNull(predicate, "predicate must not be null");
+    }
+
+    Set<T> result = new LinkedHashSet<>();
+    outer:
+    for (T element : iterable) {
+      for (Predicate<? super T> predicate : predicates) {
+        if (!predicate.test(element)) {
+          continue outer;
+        }
+      }
+      result.add(element);
+    }
+    return result;
+  }
+
+  /**
    * Reduces the iterable to a single value by applying the accumulator function.
    *
    * <p>Example usage:
