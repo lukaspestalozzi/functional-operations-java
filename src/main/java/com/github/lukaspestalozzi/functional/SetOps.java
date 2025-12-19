@@ -99,7 +99,7 @@ public final class SetOps {
    *
    * <pre>{@code
    * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-   * Set<Integer> result = SetOps.filterAll(numbers,
+   * Set<Integer> result = SetOps.filter(numbers,
    *     n -> n % 2 == 0,  // even
    *     n -> n > 4);      // greater than 4
    * // Result: {6, 8, 10}
@@ -112,7 +112,7 @@ public final class SetOps {
    * @throws NullPointerException if iterable is null or any predicate is null
    */
   @SafeVarargs
-  public static <T> Set<T> filterAll(
+  public static <T> Set<T> filter(
       Iterable<? extends T> iterable, Predicate<? super T>... predicates) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicates, "predicates must not be null");

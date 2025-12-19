@@ -97,7 +97,7 @@ public final class ListOps {
    *
    * <pre>{@code
    * List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-   * List<Integer> result = ListOps.filterAll(numbers,
+   * List<Integer> result = ListOps.filter(numbers,
    *     n -> n % 2 == 0,  // even
    *     n -> n > 4);      // greater than 4
    * // Result: [6, 8, 10]
@@ -110,7 +110,7 @@ public final class ListOps {
    * @throws NullPointerException if iterable is null or any predicate is null
    */
   @SafeVarargs
-  public static <T> List<T> filterAll(
+  public static <T> List<T> filter(
       Iterable<? extends T> iterable, Predicate<? super T>... predicates) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicates, "predicates must not be null");

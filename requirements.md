@@ -17,7 +17,7 @@ Functional operations for `java.util.List`. All methods accept any `Iterable` fo
 |--------|-----------|-------------|
 | `map` | `<T,R> List<R> map(Iterable<T>, Function<T,R>)` | Transform each element |
 | `filter` | `<T> List<T> filter(Iterable<T>, Predicate<T>)` | Keep elements matching predicate |
-| `filterAll` | `<T> List<T> filterAll(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
+| `filter` | `<T> List<T> filter(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
 | `reduce` | `<T,R> R reduce(Iterable<T>, R, BiFunction<R,T,R>)` | Fold to single value |
 | `flatMap` | `<T,R> List<R> flatMap(Iterable<T>, Function<T,Iterable<R>>)` | Map and flatten |
 | `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | First matching element |
@@ -40,7 +40,7 @@ Functional operations for `java.util.Set`. Same methods as ListOps but returns `
 |--------|-----------|-------------|
 | `map` | `<T,R> Set<R> map(Iterable<T>, Function<T,R>)` | Transform each element |
 | `filter` | `<T> Set<T> filter(Iterable<T>, Predicate<T>)` | Keep elements matching predicate |
-| `filterAll` | `<T> Set<T> filterAll(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
+| `filter` | `<T> Set<T> filter(Iterable<T>, Predicate<T>...)` | Keep elements matching ALL predicates (varargs) |
 | `reduce` | `<T,R> R reduce(Iterable<T>, R, BiFunction<R,T,R>)` | Fold to single value |
 | `flatMap` | `<T,R> Set<R> flatMap(Iterable<T>, Function<T,Iterable<R>>)` | Map and flatten |
 | `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | Any matching element |
