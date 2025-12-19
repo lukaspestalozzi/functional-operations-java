@@ -1,6 +1,7 @@
 package com.github.lukaspestalozzi.functional;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
  *
  * <p>This class provides static utility methods for common functional programming operations on
  * lists, such as map, filter, reduce, etc. All methods create new lists rather than modifying the
- * input lists.
+ * input collections. Methods accept any Iterable for maximum flexibility.
  *
  * @author Lukas Pestalozzi
  * @since 1.0.0
@@ -28,7 +29,7 @@ public final class ListOps {
   }
 
   /**
-   * Transforms each element in the input list using the provided mapper function.
+   * Transforms each element in the input iterable using the provided mapper function.
    *
    * <p>Example usage:
    *
@@ -38,26 +39,27 @@ public final class ListOps {
    * // Result: [2, 4, 6]
    * }</pre>
    *
-   * @param <T> the type of elements in the input list
+   * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output list
-   * @param list the input list to transform
+   * @param iterable the input iterable to transform
    * @param mapper the function to apply to each element
    * @return a new list containing the transformed elements
-   * @throws NullPointerException if list or mapper is null
+   * @throws NullPointerException if iterable or mapper is null
    */
-  public static <T, R> List<R> map(List<T> list, Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T, R> List<R> map(
+      Iterable<? extends T> iterable, Function<? super T, ? extends R> mapper) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    List<R> result = new ArrayList<>(list.size());
-    for (int i = 0; i < list.size(); i++) {
-      result.add(mapper.apply(list.get(i)));
+    List<R> result = new ArrayList<>();
+    for (T element : iterable) {
+      result.add(mapper.apply(element));
     }
     return result;
   }
 
   /**
-   * Filters elements in the input list based on the provided predicate.
+   * Filters elements in the input iterable based on the provided predicate.
    *
    * <p>Example usage:
    *
@@ -67,19 +69,19 @@ public final class ListOps {
    * // Result: [2, 4, 6]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list to filter
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to filter
    * @param predicate the condition that elements must satisfy
    * @return a new list containing only elements that satisfy the predicate
-   * @throws NullPointerException if list or predicate is null
+   * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> List<T> filter(List<T> list, Predicate<? super T> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<T> filter(
+      Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
     List<T> result = new ArrayList<>();
-    for (int i = 0; i < list.size(); i++) {
-      T element = list.get(i);
+    for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(element);
       }
@@ -88,7 +90,7 @@ public final class ListOps {
   }
 
   /**
-   * Reduces the list to a single value by applying the accumulator function.
+   * Reduces the iterable to a single value by applying the accumulator function.
    *
    * <p>Example usage:
    *
@@ -98,27 +100,28 @@ public final class ListOps {
    * // Result: 10
    * }</pre>
    *
-   * @param <T> the type of elements in the list
+   * @param <T> the type of elements in the iterable
    * @param <R> the type of the result
-   * @param list the input list to reduce
+   * @param iterable the input iterable to reduce
    * @param identity the initial value
    * @param accumulator the function to combine elements
    * @return the reduced value
-   * @throws NullPointerException if list or accumulator is null
+   * @throws NullPointerException if iterable or accumulator is null
    */
-  public static <T, R> R reduce(List<T> list, R identity, BiFunction<R, ? super T, R> accumulator) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T, R> R reduce(
+      Iterable<? extends T> iterable, R identity, BiFunction<R, ? super T, R> accumulator) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(accumulator, "accumulator must not be null");
 
     R result = identity;
-    for (int i = 0; i < list.size(); i++) {
-      result = accumulator.apply(result, list.get(i));
+    for (T element : iterable) {
+      result = accumulator.apply(result, element);
     }
     return result;
   }
 
   /**
-   * Maps each element to a list and flattens the results into a single list.
+   * Maps each element to an iterable and flattens the results into a single list.
    *
    * <p>Example usage:
    *
@@ -129,23 +132,26 @@ public final class ListOps {
    * // Result: ['h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd']
    * }</pre>
    *
-   * @param <T> the type of elements in the input list
+   * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output list
-   * @param list the input list
-   * @param mapper the function that maps each element to a list
+   * @param iterable the input iterable
+   * @param mapper the function that maps each element to an iterable
    * @return a new flattened list
-   * @throws NullPointerException if list or mapper is null
+   * @throws NullPointerException if iterable or mapper is null
    */
   public static <T, R> List<R> flatMap(
-      List<T> list, Function<? super T, ? extends List<? extends R>> mapper) {
-    Objects.requireNonNull(list, "list must not be null");
+      Iterable<? extends T> iterable,
+      Function<? super T, ? extends Iterable<? extends R>> mapper) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
     List<R> result = new ArrayList<>();
-    for (int i = 0; i < list.size(); i++) {
-      List<? extends R> mapped = mapper.apply(list.get(i));
+    for (T element : iterable) {
+      Iterable<? extends R> mapped = mapper.apply(element);
       if (mapped != null) {
-        result.addAll(mapped);
+        for (R item : mapped) {
+          result.add(item);
+        }
       }
     }
     return result;
@@ -162,18 +168,18 @@ public final class ListOps {
    * // Result: Optional[4]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list to search
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to search
    * @param predicate the condition to match
    * @return an Optional containing the first matching element, or empty if none found
-   * @throws NullPointerException if list or predicate is null
+   * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> Optional<T> find(List<T> list, Predicate<? super T> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> Optional<T> find(
+      Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    for (int i = 0; i < list.size(); i++) {
-      T element = list.get(i);
+    for (T element : iterable) {
       if (predicate.test(element)) {
         return Optional.of(element);
       }
@@ -182,7 +188,7 @@ public final class ListOps {
   }
 
   /**
-   * Checks if any element in the list matches the predicate.
+   * Checks if any element in the iterable matches the predicate.
    *
    * <p>Example usage:
    *
@@ -192,18 +198,18 @@ public final class ListOps {
    * // Result: true
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list to check
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to check
    * @param predicate the condition to match
    * @return true if any element matches, false otherwise
-   * @throws NullPointerException if list or predicate is null
+   * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> boolean any(List<T> list, Predicate<? super T> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> boolean any(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    for (int i = 0; i < list.size(); i++) {
-      if (predicate.test(list.get(i))) {
+    for (T element : iterable) {
+      if (predicate.test(element)) {
         return true;
       }
     }
@@ -211,7 +217,7 @@ public final class ListOps {
   }
 
   /**
-   * Checks if all elements in the list match the predicate.
+   * Checks if all elements in the iterable match the predicate.
    *
    * <p>Example usage:
    *
@@ -221,18 +227,18 @@ public final class ListOps {
    * // Result: true
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list to check
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to check
    * @param predicate the condition to match
-   * @return true if all elements match, false otherwise (returns true for empty list)
-   * @throws NullPointerException if list or predicate is null
+   * @return true if all elements match, false otherwise (returns true for empty iterable)
+   * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> boolean all(List<T> list, Predicate<? super T> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> boolean all(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    for (int i = 0; i < list.size(); i++) {
-      if (!predicate.test(list.get(i))) {
+    for (T element : iterable) {
+      if (!predicate.test(element)) {
         return false;
       }
     }
@@ -240,7 +246,7 @@ public final class ListOps {
   }
 
   /**
-   * Returns the first n elements of the list.
+   * Returns the first n elements of the iterable.
    *
    * <p>Example usage:
    *
@@ -250,29 +256,33 @@ public final class ListOps {
    * // Result: [1, 2, 3]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable
    * @param n the number of elements to take
    * @return a new list containing the first n elements
-   * @throws NullPointerException if list is null
+   * @throws NullPointerException if iterable is null
    * @throws IllegalArgumentException if n is negative
    */
-  public static <T> List<T> take(List<T> list, int n) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<T> take(Iterable<? extends T> iterable, int n) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     if (n < 0) {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    int count = Math.min(n, list.size());
-    List<T> result = new ArrayList<>(count);
-    for (int i = 0; i < count; i++) {
-      result.add(list.get(i));
+    List<T> result = new ArrayList<>();
+    int count = 0;
+    for (T element : iterable) {
+      if (count >= n) {
+        break;
+      }
+      result.add(element);
+      count++;
     }
     return result;
   }
 
   /**
-   * Returns the list without the first n elements.
+   * Returns the iterable without the first n elements.
    *
    * <p>Example usage:
    *
@@ -282,29 +292,32 @@ public final class ListOps {
    * // Result: [3, 4, 5]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable
    * @param n the number of elements to skip
    * @return a new list without the first n elements
-   * @throws NullPointerException if list is null
+   * @throws NullPointerException if iterable is null
    * @throws IllegalArgumentException if n is negative
    */
-  public static <T> List<T> drop(List<T> list, int n) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<T> drop(Iterable<? extends T> iterable, int n) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     if (n < 0) {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    int start = Math.min(n, list.size());
-    List<T> result = new ArrayList<>(list.size() - start);
-    for (int i = start; i < list.size(); i++) {
-      result.add(list.get(i));
+    List<T> result = new ArrayList<>();
+    int count = 0;
+    for (T element : iterable) {
+      if (count >= n) {
+        result.add(element);
+      }
+      count++;
     }
     return result;
   }
 
   /**
-   * Combines two lists element-wise using the provided combiner function.
+   * Combines two iterables element-wise using the provided combiner function.
    *
    * <p>Example usage:
    *
@@ -315,25 +328,28 @@ public final class ListOps {
    * // Result: [11, 22, 33]
    * }</pre>
    *
-   * @param <A> the type of elements in the first list
-   * @param <B> the type of elements in the second list
+   * @param <A> the type of elements in the first iterable
+   * @param <B> the type of elements in the second iterable
    * @param <R> the type of elements in the output list
-   * @param listA the first list
-   * @param listB the second list
+   * @param iterableA the first iterable
+   * @param iterableB the second iterable
    * @param combiner the function to combine elements
-   * @return a new list with combined elements (length is minimum of both lists)
+   * @return a new list with combined elements (length is minimum of both iterables)
    * @throws NullPointerException if any argument is null
    */
   public static <A, B, R> List<R> zip(
-      List<A> listA, List<B> listB, BiFunction<? super A, ? super B, ? extends R> combiner) {
-    Objects.requireNonNull(listA, "listA must not be null");
-    Objects.requireNonNull(listB, "listB must not be null");
+      Iterable<? extends A> iterableA,
+      Iterable<? extends B> iterableB,
+      BiFunction<? super A, ? super B, ? extends R> combiner) {
+    Objects.requireNonNull(iterableA, "iterableA must not be null");
+    Objects.requireNonNull(iterableB, "iterableB must not be null");
     Objects.requireNonNull(combiner, "combiner must not be null");
 
-    int size = Math.min(listA.size(), listB.size());
-    List<R> result = new ArrayList<>(size);
-    for (int i = 0; i < size; i++) {
-      result.add(combiner.apply(listA.get(i), listB.get(i)));
+    List<R> result = new ArrayList<>();
+    Iterator<? extends A> iterA = iterableA.iterator();
+    Iterator<? extends B> iterB = iterableB.iterator();
+    while (iterA.hasNext() && iterB.hasNext()) {
+      result.add(combiner.apply(iterA.next(), iterB.next()));
     }
     return result;
   }
@@ -349,19 +365,23 @@ public final class ListOps {
    * // Result: [1, 2, 3, 4]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable
    * @return a new list with duplicates removed
-   * @throws NullPointerException if list is null
+   * @throws NullPointerException if iterable is null
    */
-  public static <T> List<T> distinct(List<T> list) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<T> distinct(Iterable<? extends T> iterable) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
 
-    return new ArrayList<>(new LinkedHashSet<>(list));
+    LinkedHashSet<T> seen = new LinkedHashSet<>();
+    for (T element : iterable) {
+      seen.add(element);
+    }
+    return new ArrayList<>(seen);
   }
 
   /**
-   * Returns the list in reverse order.
+   * Returns the iterable elements in reverse order.
    *
    * <p>Example usage:
    *
@@ -371,23 +391,28 @@ public final class ListOps {
    * // Result: [5, 4, 3, 2, 1]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable
    * @return a new list with elements in reverse order
-   * @throws NullPointerException if list is null
+   * @throws NullPointerException if iterable is null
    */
-  public static <T> List<T> reverse(List<T> list) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<T> reverse(Iterable<? extends T> iterable) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
 
-    List<T> result = new ArrayList<>(list.size());
-    for (int i = list.size() - 1; i >= 0; i--) {
-      result.add(list.get(i));
+    List<T> collected = new ArrayList<>();
+    for (T element : iterable) {
+      collected.add(element);
+    }
+
+    List<T> result = new ArrayList<>(collected.size());
+    for (int i = collected.size() - 1; i >= 0; i--) {
+      result.add(collected.get(i));
     }
     return result;
   }
 
   /**
-   * Partitions the list into two lists based on the predicate.
+   * Partitions the iterable into two lists based on the predicate.
    *
    * <p>Example usage:
    *
@@ -397,21 +422,21 @@ public final class ListOps {
    * // Result: [[2, 4, 6], [1, 3, 5]]
    * }</pre>
    *
-   * @param <T> the type of elements in the list
-   * @param list the input list
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable
    * @param predicate the condition to partition by
    * @return a list of two lists: [matching elements, non-matching elements]
-   * @throws NullPointerException if list or predicate is null
+   * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> List<List<T>> partition(List<T> list, Predicate<? super T> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+  public static <T> List<List<T>> partition(
+      Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
     List<T> matching = new ArrayList<>();
     List<T> notMatching = new ArrayList<>();
 
-    for (int i = 0; i < list.size(); i++) {
-      T element = list.get(i);
+    for (T element : iterable) {
       if (predicate.test(element)) {
         matching.add(element);
       } else {
@@ -436,23 +461,25 @@ public final class ListOps {
    * // Result: [6, 8, 10]
    * }</pre>
    *
-   * @param <T> the type of elements in the input list
+   * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output list
-   * @param list the input list
+   * @param iterable the input iterable
    * @param mapper the function to apply to each element
    * @param predicate the condition that mapped elements must satisfy
    * @return a new list with mapped and filtered elements
    * @throws NullPointerException if any argument is null
    */
   public static <T, R> List<R> mapFilter(
-      List<T> list, Function<? super T, ? extends R> mapper, Predicate<? super R> predicate) {
-    Objects.requireNonNull(list, "list must not be null");
+      Iterable<? extends T> iterable,
+      Function<? super T, ? extends R> mapper,
+      Predicate<? super R> predicate) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
     List<R> result = new ArrayList<>();
-    for (int i = 0; i < list.size(); i++) {
-      R mapped = mapper.apply(list.get(i));
+    for (T element : iterable) {
+      R mapped = mapper.apply(element);
       if (predicate.test(mapped)) {
         result.add(mapped);
       }
@@ -471,23 +498,24 @@ public final class ListOps {
    * // Result: [20, 40]
    * }</pre>
    *
-   * @param <T> the type of elements in the input list
+   * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output list
-   * @param list the input list
+   * @param iterable the input iterable
    * @param predicate the condition that elements must satisfy
    * @param mapper the function to apply to filtered elements
    * @return a new list with filtered and mapped elements
    * @throws NullPointerException if any argument is null
    */
   public static <T, R> List<R> filterMap(
-      List<T> list, Predicate<? super T> predicate, Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(list, "list must not be null");
+      Iterable<? extends T> iterable,
+      Predicate<? super T> predicate,
+      Function<? super T, ? extends R> mapper) {
+    Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
     List<R> result = new ArrayList<>();
-    for (int i = 0; i < list.size(); i++) {
-      T element = list.get(i);
+    for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(mapper.apply(element));
       }
