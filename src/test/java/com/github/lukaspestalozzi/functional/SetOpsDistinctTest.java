@@ -36,6 +36,6 @@ class SetOpsDistinctTest {
   void testDistinctNullSet() {
     assertThatThrownBy(() -> SetOps.distinct(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 }

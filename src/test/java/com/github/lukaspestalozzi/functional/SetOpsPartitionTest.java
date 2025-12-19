@@ -63,7 +63,7 @@ class SetOpsPartitionTest {
   void testPartitionNullSet() {
     assertThatThrownBy(() -> SetOps.partition(null, n -> true))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

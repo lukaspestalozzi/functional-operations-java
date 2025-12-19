@@ -56,6 +56,6 @@ class ListOpsDistinctTest {
   void testDistinctNullList() {
     assertThatThrownBy(() -> ListOps.distinct(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 }

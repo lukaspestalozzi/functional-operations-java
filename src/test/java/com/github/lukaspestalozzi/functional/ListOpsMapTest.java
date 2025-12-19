@@ -41,7 +41,7 @@ class ListOpsMapTest {
 
     assertThatThrownBy(() -> ListOps.map(null, identity))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

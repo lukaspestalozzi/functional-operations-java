@@ -75,7 +75,7 @@ class SetOpsZipTest {
 
     assertThatThrownBy(() -> SetOps.zip(null, b, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("setA");
+        .hasMessageContaining("iterableA");
   }
 
   @Test
@@ -85,7 +85,7 @@ class SetOpsZipTest {
 
     assertThatThrownBy(() -> SetOps.zip(a, null, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("setB");
+        .hasMessageContaining("iterableB");
   }
 
   @Test

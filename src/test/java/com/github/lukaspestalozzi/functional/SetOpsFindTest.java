@@ -48,7 +48,7 @@ class SetOpsFindTest {
   void testFindNullSet() {
     assertThatThrownBy(() -> SetOps.find(null, n -> true))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

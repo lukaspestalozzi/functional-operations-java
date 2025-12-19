@@ -41,7 +41,7 @@ class ListOpsFilterTest {
 
     assertThatThrownBy(() -> ListOps.filter(null, alwaysTrue))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

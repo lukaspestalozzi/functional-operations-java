@@ -75,8 +75,7 @@ public final class ListOps {
    * @return a new list containing only elements that satisfy the predicate
    * @throws NullPointerException if iterable or predicate is null
    */
-  public static <T> List<T> filter(
-      Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+  public static <T> List<T> filter(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
@@ -140,8 +139,7 @@ public final class ListOps {
    * @throws NullPointerException if iterable or mapper is null
    */
   public static <T, R> List<R> flatMap(
-      Iterable<? extends T> iterable,
-      Function<? super T, ? extends Iterable<? extends R>> mapper) {
+      Iterable<? extends T> iterable, Function<? super T, ? extends Iterable<? extends R>> mapper) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 

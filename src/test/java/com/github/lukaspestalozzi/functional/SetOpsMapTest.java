@@ -41,7 +41,7 @@ class SetOpsMapTest {
 
     assertThatThrownBy(() -> SetOps.map(null, identity))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

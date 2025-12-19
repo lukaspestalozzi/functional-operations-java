@@ -57,7 +57,7 @@ class ListOpsFlatMapTest {
   void testFlatMapNullList() {
     assertThatThrownBy(() -> ListOps.flatMap(null, Function.identity()))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("list");
+        .hasMessageContaining("iterable");
   }
 
   @Test

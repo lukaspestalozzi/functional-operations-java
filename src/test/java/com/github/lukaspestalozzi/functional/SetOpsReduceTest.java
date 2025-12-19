@@ -36,7 +36,7 @@ class SetOpsReduceTest {
   void testReduceNullSet() {
     assertThatThrownBy(() -> SetOps.reduce(null, 0, Integer::sum))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("set");
+        .hasMessageContaining("iterable");
   }
 
   @Test

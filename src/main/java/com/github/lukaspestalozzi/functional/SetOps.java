@@ -140,8 +140,7 @@ public final class SetOps {
    * @throws NullPointerException if iterable or mapper is null
    */
   public static <T, R> Set<R> flatMap(
-      Iterable<? extends T> iterable,
-      Function<? super T, ? extends Iterable<? extends R>> mapper) {
+      Iterable<? extends T> iterable, Function<? super T, ? extends Iterable<? extends R>> mapper) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
