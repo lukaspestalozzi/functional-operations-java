@@ -14,9 +14,9 @@ High-performance functional operations for Java collections. Uses simple for loo
 ## Quick Start
 
 ```java
-import com.github.lukaspestalozzi.functional.ListOps;
-import com.github.lukaspestalozzi.functional.SetOps;
-import com.github.lukaspestalozzi.functional.MapOps;
+import dev.thelu.ListOps;
+import dev.thelu.SetOps;
+import dev.thelu.MapOps;
 
 // List operations
 List<Integer> doubled = ListOps.map(List.of(1, 2, 3), x -> x * 2);        // [2, 4, 6]
@@ -56,12 +56,12 @@ cd functional-operations-java
 ## Project Structure
 
 ```
-src/main/java/com/github/lukaspestalozzi/functional/
+src/main/java/dev/thelu/
 ├── ListOps.java    # List operations (16 methods)
 ├── SetOps.java     # Set operations (16 methods)
 └── MapOps.java     # Map operations (17 methods)
 
-src/test/java/com/github/lukaspestalozzi/functional/
+src/test/java/dev/thelu/
 ├── ListOps*Test.java   # One test file per ListOps method
 ├── SetOps*Test.java    # One test file per SetOps method
 └── MapOps*Test.java    # One test file per MapOps method
