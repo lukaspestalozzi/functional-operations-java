@@ -7,9 +7,9 @@ Project guidance for AI assistants working on this codebase.
 Functional operations library for Java 17+. Simple for loops instead of streams for performance.
 
 **Source files:**
-- `src/main/java/com/github/lukaspestalozzi/functional/ListOps.java` - List operations
-- `src/main/java/com/github/lukaspestalozzi/functional/SetOps.java` - Set operations
-- `src/main/java/com/github/lukaspestalozzi/functional/MapOps.java` - Map operations
+- `src/main/java/dev/thelu/ListOps.java` - List operations
+- `src/main/java/dev/thelu/SetOps.java` - Set operations
+- `src/main/java/dev/thelu/MapOps.java` - Map operations
 
 ## Build Commands
 
