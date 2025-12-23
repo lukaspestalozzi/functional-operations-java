@@ -1,6 +1,7 @@
 package dev.thelu;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,9 +24,19 @@ import java.util.function.Predicate;
  */
 public final class ListOps {
 
+  private static final int DEFAULT_CAPACITY = 16;
+
   /** Private constructor to prevent instantiation of utility class. */
   private ListOps() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
+  }
+
+  /**
+   * Returns the size of the iterable if known, otherwise returns the default capacity. This allows
+   * pre-sizing of result collections to avoid array resizing overhead.
+   */
+  private static int initialCapacity(Iterable<?> iterable) {
+    return (iterable instanceof Collection) ? ((Collection<?>) iterable).size() : DEFAULT_CAPACITY;
   }
 
   /**
@@ -51,7 +62,7 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    List<R> result = new ArrayList<>();
+    List<R> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       result.add(mapper.apply(element));
     }
@@ -79,7 +90,7 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    List<T> result = new ArrayList<>();
+    List<T> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(element);
@@ -118,7 +129,7 @@ public final class ListOps {
       Objects.requireNonNull(predicate, "predicate must not be null");
     }
 
-    List<T> result = new ArrayList<>();
+    List<T> result = new ArrayList<>(initialCapacity(iterable));
     outer:
     for (T element : iterable) {
       for (Predicate<? super T> predicate : predicates) {
@@ -186,7 +197,7 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    List<R> result = new ArrayList<>();
+    List<R> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       Iterable<? extends R> mapped = mapper.apply(element);
       if (mapped != null) {
@@ -310,7 +321,11 @@ public final class ListOps {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    List<T> result = new ArrayList<>();
+    int capacity =
+        (iterable instanceof Collection)
+            ? Math.min(n, ((Collection<?>) iterable).size())
+            : Math.min(n, DEFAULT_CAPACITY);
+    List<T> result = new ArrayList<>(capacity);
     int count = 0;
     for (T element : iterable) {
       if (count >= n) {
@@ -346,7 +361,11 @@ public final class ListOps {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    List<T> result = new ArrayList<>();
+    int capacity =
+        (iterable instanceof Collection)
+            ? Math.max(0, ((Collection<?>) iterable).size() - n)
+            : DEFAULT_CAPACITY;
+    List<T> result = new ArrayList<>(capacity);
     int count = 0;
     for (T element : iterable) {
       if (count >= n) {
@@ -386,7 +405,8 @@ public final class ListOps {
     Objects.requireNonNull(iterableB, "iterableB must not be null");
     Objects.requireNonNull(combiner, "combiner must not be null");
 
-    List<R> result = new ArrayList<>();
+    int capacity = Math.min(initialCapacity(iterableA), initialCapacity(iterableB));
+    List<R> result = new ArrayList<>(capacity);
     Iterator<? extends A> iterA = iterableA.iterator();
     Iterator<? extends B> iterB = iterableB.iterator();
     while (iterA.hasNext() && iterB.hasNext()) {
@@ -440,7 +460,7 @@ public final class ListOps {
   public static <T> List<T> reverse(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    List<T> collected = new ArrayList<>();
+    List<T> collected = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       collected.add(element);
     }
@@ -474,8 +494,9 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    List<T> matching = new ArrayList<>();
-    List<T> notMatching = new ArrayList<>();
+    int halfCapacity = (initialCapacity(iterable) + 1) / 2;
+    List<T> matching = new ArrayList<>(halfCapacity);
+    List<T> notMatching = new ArrayList<>(halfCapacity);
 
     for (T element : iterable) {
       if (predicate.test(element)) {
@@ -518,7 +539,7 @@ public final class ListOps {
     Objects.requireNonNull(mapper, "mapper must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    List<R> result = new ArrayList<>();
+    List<R> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       R mapped = mapper.apply(element);
       if (predicate.test(mapped)) {
@@ -555,7 +576,7 @@ public final class ListOps {
     Objects.requireNonNull(predicate, "predicate must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    List<R> result = new ArrayList<>();
+    List<R> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(mapper.apply(element));
