@@ -1,6 +1,7 @@
 package dev.thelu;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,9 +26,19 @@ import java.util.function.Predicate;
  */
 public final class SetOps {
 
+  private static final int DEFAULT_CAPACITY = 16;
+
   /** Private constructor to prevent instantiation of utility class. */
   private SetOps() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
+  }
+
+  /**
+   * Returns the size of the iterable if known, otherwise returns the default capacity. This allows
+   * pre-sizing of result collections to avoid rehashing overhead.
+   */
+  private static int initialCapacity(Iterable<?> iterable) {
+    return (iterable instanceof Collection) ? ((Collection<?>) iterable).size() : DEFAULT_CAPACITY;
   }
 
   /**
@@ -53,7 +64,7 @@ public final class SetOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    Set<R> result = new LinkedHashSet<>();
+    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       result.add(mapper.apply(element));
     }
@@ -81,7 +92,7 @@ public final class SetOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    Set<T> result = new LinkedHashSet<>();
+    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(element);
@@ -120,7 +131,7 @@ public final class SetOps {
       Objects.requireNonNull(predicate, "predicate must not be null");
     }
 
-    Set<T> result = new LinkedHashSet<>();
+    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
     outer:
     for (T element : iterable) {
       for (Predicate<? super T> predicate : predicates) {
@@ -187,7 +198,7 @@ public final class SetOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    Set<R> result = new LinkedHashSet<>();
+    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       Iterable<? extends R> mapped = mapper.apply(element);
       if (mapped != null) {
@@ -313,7 +324,11 @@ public final class SetOps {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    Set<T> result = new LinkedHashSet<>();
+    int capacity =
+        (iterable instanceof Collection)
+            ? Math.min(n, ((Collection<?>) iterable).size())
+            : Math.min(n, DEFAULT_CAPACITY);
+    Set<T> result = new LinkedHashSet<>(capacity);
     int count = 0;
     for (T element : iterable) {
       if (count >= n) {
@@ -351,7 +366,11 @@ public final class SetOps {
       throw new IllegalArgumentException("n must not be negative");
     }
 
-    Set<T> result = new LinkedHashSet<>();
+    int capacity =
+        (iterable instanceof Collection)
+            ? Math.max(0, ((Collection<?>) iterable).size() - n)
+            : DEFAULT_CAPACITY;
+    Set<T> result = new LinkedHashSet<>(capacity);
     int count = 0;
     for (T element : iterable) {
       if (count >= n) {
@@ -393,7 +412,8 @@ public final class SetOps {
     Objects.requireNonNull(iterableB, "iterableB must not be null");
     Objects.requireNonNull(combiner, "combiner must not be null");
 
-    Set<R> result = new LinkedHashSet<>();
+    int capacity = Math.min(initialCapacity(iterableA), initialCapacity(iterableB));
+    Set<R> result = new LinkedHashSet<>(capacity);
     Iterator<? extends A> iterA = iterableA.iterator();
     Iterator<? extends B> iterB = iterableB.iterator();
     while (iterA.hasNext() && iterB.hasNext()) {
@@ -421,7 +441,7 @@ public final class SetOps {
   public static <T> Set<T> distinct(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    Set<T> result = new LinkedHashSet<>();
+    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       result.add(element);
     }
@@ -447,7 +467,7 @@ public final class SetOps {
   public static <T> Set<T> reverse(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    Set<T> result = new LinkedHashSet<>();
+    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       result.add(element);
     }
@@ -476,8 +496,9 @@ public final class SetOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    Set<T> matching = new LinkedHashSet<>();
-    Set<T> notMatching = new LinkedHashSet<>();
+    int halfCapacity = (initialCapacity(iterable) + 1) / 2;
+    Set<T> matching = new LinkedHashSet<>(halfCapacity);
+    Set<T> notMatching = new LinkedHashSet<>(halfCapacity);
 
     for (T element : iterable) {
       if (predicate.test(element)) {
@@ -520,7 +541,7 @@ public final class SetOps {
     Objects.requireNonNull(mapper, "mapper must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    Set<R> result = new LinkedHashSet<>();
+    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       R mapped = mapper.apply(element);
       if (predicate.test(mapped)) {
@@ -557,7 +578,7 @@ public final class SetOps {
     Objects.requireNonNull(predicate, "predicate must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
 
-    Set<R> result = new LinkedHashSet<>();
+    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
     for (T element : iterable) {
       if (predicate.test(element)) {
         result.add(mapper.apply(element));
