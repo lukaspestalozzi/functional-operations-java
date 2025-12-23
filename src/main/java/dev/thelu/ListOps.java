@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.RandomAccess;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,6 +41,14 @@ public final class ListOps {
   }
 
   /**
+   * Returns true if the iterable supports fast random access (like ArrayList). Index-based
+   * iteration is faster for these collections as it avoids iterator object creation.
+   */
+  private static boolean isRandomAccess(Iterable<?> iterable) {
+    return iterable instanceof List && iterable instanceof RandomAccess;
+  }
+
+  /**
    * Transforms each element in the input iterable using the provided mapper function.
    *
    * <p>Example usage:
@@ -61,6 +70,16 @@ public final class ListOps {
       Iterable<? extends T> iterable, Function<? super T, ? extends R> mapper) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(mapper, "mapper must not be null");
+
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      int size = list.size();
+      List<R> result = new ArrayList<>(size);
+      for (int i = 0; i < size; i++) {
+        result.add(mapper.apply(list.get(i)));
+      }
+      return result;
+    }
 
     List<R> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
@@ -89,6 +108,19 @@ public final class ListOps {
   public static <T> List<T> filter(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
+
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      int size = list.size();
+      List<T> result = new ArrayList<>(size);
+      for (int i = 0; i < size; i++) {
+        T element = list.get(i);
+        if (predicate.test(element)) {
+          result.add(element);
+        }
+      }
+      return result;
+    }
 
     List<T> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
@@ -166,6 +198,15 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(accumulator, "accumulator must not be null");
 
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      R result = identity;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        result = accumulator.apply(result, list.get(i));
+      }
+      return result;
+    }
+
     R result = identity;
     for (T element : iterable) {
       result = accumulator.apply(result, element);
@@ -231,6 +272,17 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        T element = list.get(i);
+        if (predicate.test(element)) {
+          return Optional.of(element);
+        }
+      }
+      return Optional.empty();
+    }
+
     for (T element : iterable) {
       if (predicate.test(element)) {
         return Optional.of(element);
@@ -260,6 +312,16 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        if (predicate.test(list.get(i))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     for (T element : iterable) {
       if (predicate.test(element)) {
         return true;
@@ -288,6 +350,16 @@ public final class ListOps {
   public static <T> boolean all(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
+
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        if (!predicate.test(list.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
 
     for (T element : iterable) {
       if (!predicate.test(element)) {
