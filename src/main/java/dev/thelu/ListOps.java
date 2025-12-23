@@ -2,6 +2,7 @@ package dev.thelu;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -532,15 +533,11 @@ public final class ListOps {
   public static <T> List<T> reverse(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    List<T> collected = new ArrayList<>(initialCapacity(iterable));
+    List<T> result = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
-      collected.add(element);
+      result.add(element);
     }
-
-    List<T> result = new ArrayList<>(collected.size());
-    for (int i = collected.size() - 1; i >= 0; i--) {
-      result.add(collected.get(i));
-    }
+    Collections.reverse(result);
     return result;
   }
 
