@@ -186,16 +186,16 @@ echo -e "${GREEN}✓ Dependencies found${NC}"
 # Build classpath
 CLASSPATH="target/classes:target/test-classes:${JMH_CORE}:${JOPT}:${MATH3}"
 
-# Build JMH arguments (pattern must be LAST)
-JMH_ARGS="-rf json -rff ${OUTPUT_FILE}"
-JMH_ARGS="$JMH_ARGS -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS -t $THREADS"
+# Build JMH arguments as array (proper way to handle special chars)
+JMH_ARGS=(-rf json -rff "${OUTPUT_FILE}")
+JMH_ARGS+=(-wi "$WARMUP_ITERATIONS" -i "$MEASUREMENT_ITERATIONS" -f "$FORKS" -t "$THREADS")
 
 if [ "$GC_PROFILER" = true ]; then
-    JMH_ARGS="$JMH_ARGS -prof gc"
+    JMH_ARGS+=(-prof gc)
 fi
 
 # Pattern must be last argument
-JMH_ARGS="$JMH_ARGS ${BENCHMARK_PATTERN}"
+JMH_ARGS+=("$BENCHMARK_PATTERN")
 
 # Run benchmarks
 echo -e "${BLUE}Step 2: Running benchmarks...${NC}"
@@ -207,7 +207,8 @@ echo "Available benchmarks:"
 java -cp "$CLASSPATH" org.openjdk.jmh.Main -l 2>&1 | head -10
 echo ""
 
-java -cp "$CLASSPATH" org.openjdk.jmh.Main $JMH_ARGS
+echo "Running: java -cp <classpath> org.openjdk.jmh.Main ${JMH_ARGS[*]}"
+java -cp "$CLASSPATH" org.openjdk.jmh.Main "${JMH_ARGS[@]}"
 
 if [ $? -eq 0 ]; then
     echo ""
