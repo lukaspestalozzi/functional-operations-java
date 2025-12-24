@@ -19,9 +19,10 @@ FORKS=2
 THREADS=1
 GC_PROFILER=false
 QUICK_MODE=false
+BENCHMARK_PATTERN=".*"
 
 print_usage() {
-    echo "Usage: $0 [options]"
+    echo "Usage: $0 [options] [pattern]"
     echo ""
     echo "Options:"
     echo "  -q, --quick          Quick mode (fewer iterations)"
@@ -32,11 +33,16 @@ print_usage() {
     echo "  -f, --forks N        Number of forks (default: 2)"
     echo "  -h, --help           Show this help message"
     echo ""
+    echo "Arguments:"
+    echo "  pattern              JMH benchmark pattern (default: .* for all)"
+    echo ""
     echo "Examples:"
-    echo "  $0                   # Run full benchmarks"
+    echo "  $0                   # Run all benchmarks"
     echo "  $0 -q                # Quick benchmark run"
     echo "  $0 -g                # Run with GC profiler"
     echo "  $0 -q -g             # Quick run with GC profiler"
+    echo "  $0 \".*map.*\"         # Run only map benchmarks"
+    echo "  $0 -q \".*filter.*\"   # Quick run for filter benchmarks"
 }
 
 # Parse command line arguments
@@ -73,10 +79,14 @@ while [[ $# -gt 0 ]]; do
             print_usage
             exit 0
             ;;
-        *)
+        -*)
             echo "Unknown option: $1"
             print_usage
             exit 1
+            ;;
+        *)
+            BENCHMARK_PATTERN="$1"
+            shift
             ;;
     esac
 done
@@ -94,21 +104,42 @@ echo "  Forks: $FORKS"
 echo "  Threads: $THREADS"
 echo "  GC Profiler: $GC_PROFILER"
 echo "  Quick mode: $QUICK_MODE"
+echo "  Pattern: $BENCHMARK_PATTERN"
 echo ""
 
-# Build benchmark JAR
-echo -e "${BLUE}Step 1: Building benchmark JAR...${NC}"
-./mvnw -B clean package -Pbenchmark -DskipTests
+# Compile project
+echo -e "${BLUE}Step 1: Compiling project...${NC}"
+./mvnw -B compile test-compile -q
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Build successful${NC}"
+    echo -e "${GREEN}✓ Compilation successful${NC}"
 else
-    echo -e "${RED}✗ Build failed${NC}"
+    echo -e "${RED}✗ Compilation failed${NC}"
     exit 1
 fi
 echo ""
 
+# Find JMH dependencies in local Maven repository
+M2_REPO="${HOME}/.m2/repository"
+JMH_VERSION="1.37"
+
+JMH_CORE="${M2_REPO}/org/openjdk/jmh/jmh-core/${JMH_VERSION}/jmh-core-${JMH_VERSION}.jar"
+JOPT="${M2_REPO}/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar"
+MATH3="${M2_REPO}/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar"
+
+# Verify dependencies exist
+for dep in "$JMH_CORE" "$JOPT" "$MATH3"; do
+    if [ ! -f "$dep" ]; then
+        echo -e "${RED}Missing dependency: $dep${NC}"
+        echo "Running Maven dependency resolution..."
+        ./mvnw -B dependency:resolve -q
+    fi
+done
+
+# Build classpath
+CLASSPATH="target/classes:target/test-classes:${JMH_CORE}:${JOPT}:${MATH3}"
+
 # Build JMH arguments
-JMH_ARGS=".* -rf json -rff target/jmh-result.json"
+JMH_ARGS="${BENCHMARK_PATTERN} -rf json -rff target/jmh-result.json"
 JMH_ARGS="$JMH_ARGS -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS -t $THREADS"
 
 if [ "$GC_PROFILER" = true ]; then
@@ -120,7 +151,7 @@ echo -e "${BLUE}Step 2: Running benchmarks...${NC}"
 echo "This may take several minutes..."
 echo ""
 
-java -jar target/benchmarks.jar $JMH_ARGS
+java -cp "$CLASSPATH" org.openjdk.jmh.Main $JMH_ARGS
 
 if [ $? -eq 0 ]; then
     echo ""
