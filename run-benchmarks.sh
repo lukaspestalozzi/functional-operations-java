@@ -143,24 +143,45 @@ if [ ! -f "$BENCHMARK_LIST" ]; then
     exit 1
 fi
 echo -e "${GREEN}✓ BenchmarkList generated${NC}"
+
+# Debug: Show BenchmarkList contents and verify class files
+echo "  BenchmarkList entries (first 5):"
+head -5 "$BENCHMARK_LIST" | while read line; do echo "    $line"; done
+echo "  Benchmark classes:"
+ls target/test-classes/dev/thelu/benchmarks/*.class 2>/dev/null | head -3 | while read f; do echo "    $f"; done
 echo ""
 
 # Find JMH dependencies in local Maven repository
 M2_REPO="${HOME}/.m2/repository"
 JMH_VERSION="1.37"
 
+echo "  Maven repo: $M2_REPO"
+
 JMH_CORE="${M2_REPO}/org/openjdk/jmh/jmh-core/${JMH_VERSION}/jmh-core-${JMH_VERSION}.jar"
 JOPT="${M2_REPO}/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar"
 MATH3="${M2_REPO}/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar"
 
 # Verify dependencies exist
+DEPS_MISSING=false
 for dep in "$JMH_CORE" "$JOPT" "$MATH3"; do
     if [ ! -f "$dep" ]; then
         echo -e "${RED}Missing dependency: $dep${NC}"
-        echo "Running Maven dependency resolution..."
-        ./mvnw -B dependency:resolve -q
+        DEPS_MISSING=true
     fi
 done
+
+if [ "$DEPS_MISSING" = true ]; then
+    echo "Resolving dependencies..."
+    ./mvnw -B dependency:resolve -q
+    # Verify again
+    for dep in "$JMH_CORE" "$JOPT" "$MATH3"; do
+        if [ ! -f "$dep" ]; then
+            echo -e "${RED}Still missing: $dep${NC}"
+            exit 1
+        fi
+    done
+fi
+echo -e "${GREEN}✓ Dependencies found${NC}"
 
 # Build classpath
 CLASSPATH="target/classes:target/test-classes:${JMH_CORE}:${JOPT}:${MATH3}"
@@ -176,6 +197,11 @@ fi
 # Run benchmarks
 echo -e "${BLUE}Step 2: Running benchmarks...${NC}"
 echo "This may take several minutes..."
+echo ""
+
+# First list available benchmarks
+echo "Available benchmarks:"
+java -cp "$CLASSPATH" org.openjdk.jmh.Main -l 2>&1 | head -10
 echo ""
 
 java -cp "$CLASSPATH" org.openjdk.jmh.Main $JMH_ARGS
