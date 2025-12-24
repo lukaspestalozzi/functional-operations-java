@@ -172,7 +172,7 @@ ListOpsBenchmark.listOps_map:gc.alloc.rate  thrpt   10   1234.567 ±   12.345  M
 
 ```bash
 # 1. Make changes to ListOps
-vim src/main/java/com/github/lukaspestalozzi/functional/ListOps.java
+vim src/main/java/dev/thelu/ListOps.java
 
 # 2. Run quick benchmark
 ./run-benchmarks.sh -q
