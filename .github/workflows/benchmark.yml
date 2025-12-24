@@ -42,16 +42,65 @@ jobs:
       - name: Display benchmark summary
         if: always()
         run: |
+          echo "## 🚀 Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
           if [ -f target/jmh-result.json ]; then
-            echo "## Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+            echo "### Throughput Comparison (ops/μs - higher is better)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Benchmark completed successfully!" >> $GITHUB_STEP_SUMMARY
-            echo "Full results are available in the artifacts." >> $GITHUB_STEP_SUMMARY
+            echo "| Operation | ListOps | Streams | Speedup |" >> $GITHUB_STEP_SUMMARY
+            echo "|-----------|---------|---------|---------|" >> $GITHUB_STEP_SUMMARY
+
+            # Parse JSON and create comparison table
+            python3 << 'PYTHON_SCRIPT' >> $GITHUB_STEP_SUMMARY
+          import json
+          import sys
+
+          try:
+              with open('target/jmh-result.json', 'r') as f:
+                  results = json.load(f)
+
+              # Group by operation and mode
+              throughput = {}
+              for r in results:
+                  name = r['benchmark'].split('.')[-1]
+                  mode = r.get('mode', 'thrpt')
+                  if mode != 'thrpt':
+                      continue
+
+                  # Get score for listSize=1000 if available, otherwise first result
+                  score = r['primaryMetric']['score']
+                  params = r.get('params', {})
+                  list_size = params.get('listSize', 'N/A')
+
+                  if list_size == '1000' or name not in throughput:
+                      throughput[name] = score
+
+              # Match listOps vs streams
+              ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain']
+              for op in ops:
+                  listops_key = f'listOps_{op}'
+                  streams_key = f'streams_{op}'
+
+                  if listops_key in throughput and streams_key in throughput:
+                      lo = throughput[listops_key]
+                      st = throughput[streams_key]
+                      speedup = lo / st if st > 0 else 0
+                      emoji = "🟢" if speedup >= 1.5 else "🟡" if speedup >= 1.0 else "🔴"
+                      print(f"| {op} | {lo:.3f} | {st:.3f} | {emoji} {speedup:.2f}x |")
+
+          except Exception as e:
+              print(f"| Error | - | - | {e} |")
+          PYTHON_SCRIPT
+
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Quick Stats" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            cat target/jmh-result.json | head -20
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "### Legend" >> $GITHUB_STEP_SUMMARY
+            echo "- 🟢 **1.5x+ faster** - Significant improvement" >> $GITHUB_STEP_SUMMARY
+            echo "- 🟡 **1.0-1.5x** - Moderate improvement" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔴 **<1.0x** - Slower than Streams" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            echo "*Run locally: \`./run-benchmarks.sh --quick\`*" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Benchmark results not found" >> $GITHUB_STEP_SUMMARY
           fi
@@ -78,17 +127,41 @@ jobs:
             let comment = '## 🚀 Performance Benchmark Results\n\n';
 
             if (fs.existsSync('target/jmh-result.json')) {
-              comment += '✅ Benchmarks completed successfully!\n\n';
-              comment += '📊 Results have been uploaded as artifacts.\n\n';
-              comment += '### How to interpret results:\n';
-              comment += '- **Throughput**: Higher is better (ops/second)\n';
-              comment += '- **Average Time**: Lower is better (microseconds)\n';
-              comment += '- Compare `listOps_*` vs `streams_*` methods\n\n';
-              comment += '### Next Steps:\n';
-              comment += '1. Download the artifacts to view detailed results\n';
-              comment += '2. Check for any significant performance regressions\n';
-              comment += '3. Compare with baseline metrics\n\n';
-              comment += '💡 **Tip**: Run locally with `./run-benchmarks.sh --quick` for the same results.';
+              try {
+                const results = JSON.parse(fs.readFileSync('target/jmh-result.json', 'utf8'));
+
+                // Group throughput results
+                const throughput = {};
+                for (const r of results) {
+                  const name = r.benchmark.split('.').pop();
+                  if (r.mode !== 'thrpt') continue;
+                  const listSize = r.params?.listSize || 'N/A';
+                  if (listSize === '1000' || !throughput[name]) {
+                    throughput[name] = r.primaryMetric.score;
+                  }
+                }
+
+                comment += '### Throughput Comparison (ops/μs)\n\n';
+                comment += '| Operation | ListOps | Streams | Speedup |\n';
+                comment += '|-----------|---------|---------|--------:|\n';
+
+                const ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain'];
+                for (const op of ops) {
+                  const lo = throughput[`listOps_${op}`];
+                  const st = throughput[`streams_${op}`];
+                  if (lo && st) {
+                    const speedup = lo / st;
+                    const emoji = speedup >= 1.5 ? '🟢' : speedup >= 1.0 ? '🟡' : '🔴';
+                    comment += `| ${op} | ${lo.toFixed(3)} | ${st.toFixed(3)} | ${emoji} ${speedup.toFixed(2)}x |\n`;
+                  }
+                }
+
+                comment += '\n**Legend:** 🟢 1.5x+ faster | 🟡 1.0-1.5x | 🔴 slower\n\n';
+                comment += '---\n';
+                comment += '*Run locally: `./run-benchmarks.sh --quick`*';
+              } catch (e) {
+                comment += '✅ Benchmarks completed. See artifacts for details.\n';
+              }
             } else {
               comment += '⚠️ Benchmarks encountered an issue.\n\n';
               comment += 'Please check the workflow logs for details.';
