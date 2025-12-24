@@ -123,15 +123,26 @@ echo "  Pattern: $BENCHMARK_PATTERN"
 echo "  Output: $OUTPUT_FILE"
 echo ""
 
-# Compile project
+# Compile project (clean to ensure annotation processor runs)
 echo -e "${BLUE}Step 1: Compiling project...${NC}"
-./mvnw -B compile test-compile -q
+./mvnw -B clean compile test-compile -q
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Compilation successful${NC}"
 else
     echo -e "${RED}✗ Compilation failed${NC}"
     exit 1
 fi
+
+# Verify BenchmarkList was generated
+BENCHMARK_LIST="target/test-classes/META-INF/BenchmarkList"
+if [ ! -f "$BENCHMARK_LIST" ]; then
+    echo -e "${RED}✗ BenchmarkList not found at $BENCHMARK_LIST${NC}"
+    echo "The JMH annotation processor may not have run."
+    echo "Contents of target/test-classes/META-INF/:"
+    ls -la target/test-classes/META-INF/ 2>/dev/null || echo "  Directory does not exist"
+    exit 1
+fi
+echo -e "${GREEN}✓ BenchmarkList generated${NC}"
 echo ""
 
 # Find JMH dependencies in local Maven repository
