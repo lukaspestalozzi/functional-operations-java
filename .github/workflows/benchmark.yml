@@ -35,11 +35,9 @@ jobs:
 
       - name: Run performance benchmarks (quick mode)
         run: ./run-benchmarks.sh --quick
-        continue-on-error: true
 
       - name: Run memory benchmarks with GC profiler
         run: ./run-benchmarks.sh --quick --gc "MemoryAllocation.*"
-        continue-on-error: true
 
       - name: Display benchmark summary
         if: always()
