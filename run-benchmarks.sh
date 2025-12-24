@@ -186,13 +186,16 @@ echo -e "${GREEN}✓ Dependencies found${NC}"
 # Build classpath
 CLASSPATH="target/classes:target/test-classes:${JMH_CORE}:${JOPT}:${MATH3}"
 
-# Build JMH arguments
-JMH_ARGS="${BENCHMARK_PATTERN} -rf json -rff ${OUTPUT_FILE}"
+# Build JMH arguments (pattern must be LAST)
+JMH_ARGS="-rf json -rff ${OUTPUT_FILE}"
 JMH_ARGS="$JMH_ARGS -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS -t $THREADS"
 
 if [ "$GC_PROFILER" = true ]; then
     JMH_ARGS="$JMH_ARGS -prof gc"
 fi
+
+# Pattern must be last argument
+JMH_ARGS="$JMH_ARGS ${BENCHMARK_PATTERN}"
 
 # Run benchmarks
 echo -e "${BLUE}Step 2: Running benchmarks...${NC}"
