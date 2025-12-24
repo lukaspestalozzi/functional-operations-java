@@ -20,6 +20,7 @@ THREADS=1
 GC_PROFILER=false
 QUICK_MODE=false
 BENCHMARK_PATTERN=".*"
+OUTPUT_FILE=""
 
 print_usage() {
     echo "Usage: $0 [options] [pattern]"
@@ -27,6 +28,7 @@ print_usage() {
     echo "Options:"
     echo "  -q, --quick          Quick mode (fewer iterations)"
     echo "  -g, --gc             Enable GC profiler for memory allocation tracking"
+    echo "  -o, --output FILE    Output JSON file (default: target/jmh-result.json)"
     echo "  -t, --threads N      Number of threads (default: 1)"
     echo "  -w, --warmup N       Warmup iterations (default: 3)"
     echo "  -m, --measurement N  Measurement iterations (default: 5)"
@@ -58,6 +60,10 @@ while [[ $# -gt 0 ]]; do
         -g|--gc)
             GC_PROFILER=true
             shift
+            ;;
+        -o|--output)
+            OUTPUT_FILE="$2"
+            shift 2
             ;;
         -t|--threads)
             THREADS="$2"
@@ -96,6 +102,15 @@ echo -e "${BLUE}Performance Benchmark Runner${NC}"
 echo -e "${BLUE}================================${NC}"
 echo ""
 
+# Determine output file early for display
+if [ -z "$OUTPUT_FILE" ]; then
+    if [ "$GC_PROFILER" = true ]; then
+        OUTPUT_FILE="target/jmh-memory-result.json"
+    else
+        OUTPUT_FILE="target/jmh-result.json"
+    fi
+fi
+
 # Print configuration
 echo -e "${YELLOW}Configuration:${NC}"
 echo "  Warmup iterations: $WARMUP_ITERATIONS"
@@ -105,6 +120,7 @@ echo "  Threads: $THREADS"
 echo "  GC Profiler: $GC_PROFILER"
 echo "  Quick mode: $QUICK_MODE"
 echo "  Pattern: $BENCHMARK_PATTERN"
+echo "  Output: $OUTPUT_FILE"
 echo ""
 
 # Compile project
@@ -139,7 +155,7 @@ done
 CLASSPATH="target/classes:target/test-classes:${JMH_CORE}:${JOPT}:${MATH3}"
 
 # Build JMH arguments
-JMH_ARGS="${BENCHMARK_PATTERN} -rf json -rff target/jmh-result.json"
+JMH_ARGS="${BENCHMARK_PATTERN} -rf json -rff ${OUTPUT_FILE}"
 JMH_ARGS="$JMH_ARGS -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS -t $THREADS"
 
 if [ "$GC_PROFILER" = true ]; then
@@ -160,13 +176,13 @@ if [ $? -eq 0 ]; then
 
     # Display results location
     echo -e "${BLUE}Results:${NC}"
-    echo "  JSON output: target/jmh-result.json"
+    echo "  JSON output: $OUTPUT_FILE"
 
-    if [ -f "target/jmh-result.json" ]; then
+    if [ -f "$OUTPUT_FILE" ]; then
         echo ""
         echo -e "${BLUE}Quick Summary:${NC}"
         echo "  Use 'jq' to parse results, e.g.:"
-        echo "    cat target/jmh-result.json | jq '.[] | {benchmark: .benchmark, score: .primaryMetric.score}'"
+        echo "    cat $OUTPUT_FILE | jq '.[] | {benchmark: .benchmark, score: .primaryMetric.score}'"
     fi
 
     echo ""

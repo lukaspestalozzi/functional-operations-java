@@ -33,13 +33,12 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Compile project
-        run: ./mvnw -B compile test-compile
+      - name: Run performance benchmarks (quick mode)
+        run: ./run-benchmarks.sh --quick
+        continue-on-error: true
 
-      - name: Run benchmarks (quick mode)
-        run: |
-          java -cp "target/classes:target/test-classes:$HOME/.m2/repository/org/openjdk/jmh/jmh-core/1.37/jmh-core-1.37.jar:$HOME/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar:$HOME/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar" \
-            org.openjdk.jmh.Main ".*" -rf json -rff target/jmh-result.json -wi 2 -i 3 -f 1
+      - name: Run memory benchmarks with GC profiler
+        run: ./run-benchmarks.sh --quick --gc "MemoryAllocation.*"
         continue-on-error: true
 
       - name: Display benchmark summary
@@ -66,6 +65,7 @@ jobs:
           name: benchmark-results-pr-${{ github.event.pull_request.number || github.run_id }}
           path: |
             target/jmh-result.json
+            target/jmh-memory-result.json
             target/*.log
           retention-days: 30
 
@@ -90,7 +90,7 @@ jobs:
               comment += '1. Download the artifacts to view detailed results\n';
               comment += '2. Check for any significant performance regressions\n';
               comment += '3. Compare with baseline metrics\n\n';
-              comment += '💡 **Tip**: Run locally with `./run-benchmarks.sh` for full results.';
+              comment += '💡 **Tip**: Run locally with `./run-benchmarks.sh --quick` for the same results.';
             } else {
               comment += '⚠️ Benchmarks encountered an issue.\n\n';
               comment += 'Please check the workflow logs for details.';
@@ -106,37 +106,3 @@ jobs:
             } catch (error) {
               core.warning(`Could not create PR comment: ${error.message}`);
             }
-
-  # Optional: Run with GC profiler for memory allocation tracking
-  memory-benchmark:
-    name: Memory Allocation Benchmarks
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Compile project
-        run: ./mvnw -B compile test-compile
-
-      - name: Run memory allocation benchmarks
-        run: |
-          java -cp "target/classes:target/test-classes:$HOME/.m2/repository/org/openjdk/jmh/jmh-core/1.37/jmh-core-1.37.jar:$HOME/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar:$HOME/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar" \
-            org.openjdk.jmh.Main "MemoryAllocation.*" -prof gc -rf json -rff target/jmh-memory-result.json
-        continue-on-error: true
-
-      - name: Upload memory benchmark results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: memory-benchmark-results-${{ github.run_id }}
-          path: |
-            target/jmh-memory-result.json
-          retention-days: 30
