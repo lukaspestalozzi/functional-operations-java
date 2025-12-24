@@ -1,6 +1,8 @@
 name: Performance Benchmarks
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main, develop ]
     types: [ opened, synchronize, reopened ]
@@ -33,11 +35,29 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Restore baseline benchmark results
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          path: baseline-benchmark.json
+          key: benchmark-baseline-main
+
       - name: Run performance benchmarks (quick mode)
         run: ./run-benchmarks.sh --quick
 
       - name: Run memory benchmarks with GC profiler
         run: ./run-benchmarks.sh --quick --gc "MemoryAllocation.*"
+
+      - name: Save baseline benchmark results
+        if: github.ref == 'refs/heads/main'
+        run: cp target/jmh-result.json baseline-benchmark.json
+
+      - name: Cache baseline benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          path: baseline-benchmark.json
+          key: benchmark-baseline-main
 
       - name: Display benchmark summary
         if: always()
@@ -46,58 +66,102 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -f target/jmh-result.json ]; then
-            echo "### Throughput Comparison (ops/μs - higher is better)" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Operation | ListOps | Streams | Speedup |" >> $GITHUB_STEP_SUMMARY
-            echo "|-----------|---------|---------|---------|" >> $GITHUB_STEP_SUMMARY
+            # Check if we have baseline to compare against
+            HAS_BASELINE="false"
+            if [ -f baseline-benchmark.json ]; then
+              HAS_BASELINE="true"
+              echo "### Performance Comparison: PR vs Main" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "| Operation | PR | Main | Change |" >> $GITHUB_STEP_SUMMARY
+              echo "|-----------|---:|-----:|-------:|" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### Throughput Results (ops/μs - higher is better)" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "| Operation | ListOps | Streams | Speedup |" >> $GITHUB_STEP_SUMMARY
+              echo "|-----------|---------|---------|---------|" >> $GITHUB_STEP_SUMMARY
+            fi
 
             # Parse JSON and create comparison table
-            python3 << 'PYTHON_SCRIPT' >> $GITHUB_STEP_SUMMARY
+            python3 << PYTHON_SCRIPT >> $GITHUB_STEP_SUMMARY
           import json
           import sys
+          import os
 
-          try:
-              with open('target/jmh-result.json', 'r') as f:
+          def load_results(filepath):
+              with open(filepath, 'r') as f:
                   results = json.load(f)
-
-              # Group by operation and mode
               throughput = {}
               for r in results:
                   name = r['benchmark'].split('.')[-1]
                   mode = r.get('mode', 'thrpt')
                   if mode != 'thrpt':
                       continue
-
-                  # Get score for listSize=1000 if available, otherwise first result
                   score = r['primaryMetric']['score']
                   params = r.get('params', {})
                   list_size = params.get('listSize', 'N/A')
-
                   if list_size == '1000' or name not in throughput:
                       throughput[name] = score
+              return throughput
 
-              # Match listOps vs streams
-              ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain']
-              for op in ops:
-                  listops_key = f'listOps_{op}'
-                  streams_key = f'streams_{op}'
+          try:
+              current = load_results('target/jmh-result.json')
+              has_baseline = os.path.exists('baseline-benchmark.json')
 
-                  if listops_key in throughput and streams_key in throughput:
-                      lo = throughput[listops_key]
-                      st = throughput[streams_key]
-                      speedup = lo / st if st > 0 else 0
-                      emoji = "🟢" if speedup >= 1.5 else "🟡" if speedup >= 1.0 else "🔴"
-                      print(f"| {op} | {lo:.3f} | {st:.3f} | {emoji} {speedup:.2f}x |")
+              if has_baseline:
+                  baseline = load_results('baseline-benchmark.json')
+                  # Compare ListOps performance between PR and main
+                  ops = ['listOps_map', 'listOps_filter', 'listOps_chainedMapFilter',
+                         'listOps_chainedFilterMap', 'listOps_complexChain']
+                  for op in ops:
+                      display_name = op.replace('listOps_', '')
+                      if op in current:
+                          curr_score = current[op]
+                          if op in baseline:
+                              base_score = baseline[op]
+                              change = ((curr_score - base_score) / base_score) * 100 if base_score > 0 else 0
+                              if change > 5:
+                                  emoji = "🟢"
+                                  sign = "+"
+                              elif change < -5:
+                                  emoji = "🔴"
+                                  sign = ""
+                              else:
+                                  emoji = "⚪"
+                                  sign = "+" if change >= 0 else ""
+                              print(f"| {display_name} | {curr_score:.3f} | {base_score:.3f} | {emoji} {sign}{change:.1f}% |")
+                          else:
+                              print(f"| {display_name} | {curr_score:.3f} | - | 🆕 new |")
+              else:
+                  # No baseline - show ListOps vs Streams comparison
+                  ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain']
+                  for op in ops:
+                      listops_key = f'listOps_{op}'
+                      streams_key = f'streams_{op}'
+                      if listops_key in current and streams_key in current:
+                          lo = current[listops_key]
+                          st = current[streams_key]
+                          speedup = lo / st if st > 0 else 0
+                          emoji = "🟢" if speedup >= 1.5 else "🟡" if speedup >= 1.0 else "🔴"
+                          print(f"| {op} | {lo:.3f} | {st:.3f} | {emoji} {speedup:.2f}x |")
 
           except Exception as e:
               print(f"| Error | - | - | {e} |")
           PYTHON_SCRIPT
 
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Legend" >> $GITHUB_STEP_SUMMARY
-            echo "- 🟢 **1.5x+ faster** - Significant improvement" >> $GITHUB_STEP_SUMMARY
-            echo "- 🟡 **1.0-1.5x** - Moderate improvement" >> $GITHUB_STEP_SUMMARY
-            echo "- 🔴 **<1.0x** - Slower than Streams" >> $GITHUB_STEP_SUMMARY
+            if [ "$HAS_BASELINE" = "true" ]; then
+              echo "### Legend" >> $GITHUB_STEP_SUMMARY
+              echo "- 🟢 **>5% faster** - Performance improved" >> $GITHUB_STEP_SUMMARY
+              echo "- ⚪ **±5%** - No significant change" >> $GITHUB_STEP_SUMMARY
+              echo "- 🔴 **>5% slower** - Performance regression" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### Legend" >> $GITHUB_STEP_SUMMARY
+              echo "- 🟢 **1.5x+ faster** - Significant improvement over Streams" >> $GITHUB_STEP_SUMMARY
+              echo "- 🟡 **1.0-1.5x** - Moderate improvement" >> $GITHUB_STEP_SUMMARY
+              echo "- 🔴 **<1.0x** - Slower than Streams" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "> ℹ️ *No baseline from main branch available for comparison*" >> $GITHUB_STEP_SUMMARY
+            fi
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "---" >> $GITHUB_STEP_SUMMARY
             echo "*Run locally: \`./run-benchmarks.sh --quick\`*" >> $GITHUB_STEP_SUMMARY
@@ -109,7 +173,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-pr-${{ github.event.pull_request.number || github.run_id }}
+          name: benchmark-results-${{ github.event.pull_request.number || github.run_id }}
           path: |
             target/jmh-result.json
             target/jmh-memory-result.json
@@ -128,36 +192,69 @@ jobs:
 
             if (fs.existsSync('target/jmh-result.json')) {
               try {
-                const results = JSON.parse(fs.readFileSync('target/jmh-result.json', 'utf8'));
-
-                // Group throughput results
-                const throughput = {};
-                for (const r of results) {
-                  const name = r.benchmark.split('.').pop();
-                  if (r.mode !== 'thrpt') continue;
-                  const listSize = r.params?.listSize || 'N/A';
-                  if (listSize === '1000' || !throughput[name]) {
-                    throughput[name] = r.primaryMetric.score;
+                const loadResults = (filepath) => {
+                  const results = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+                  const throughput = {};
+                  for (const r of results) {
+                    const name = r.benchmark.split('.').pop();
+                    if (r.mode !== 'thrpt') continue;
+                    const listSize = r.params?.listSize || 'N/A';
+                    if (listSize === '1000' || !throughput[name]) {
+                      throughput[name] = r.primaryMetric.score;
+                    }
                   }
+                  return throughput;
+                };
+
+                const current = loadResults('target/jmh-result.json');
+                const hasBaseline = fs.existsSync('baseline-benchmark.json');
+
+                if (hasBaseline) {
+                  const baseline = loadResults('baseline-benchmark.json');
+                  comment += '### Performance Comparison: PR vs Main\n\n';
+                  comment += '| Operation | PR | Main | Change |\n';
+                  comment += '|-----------|---:|-----:|-------:|\n';
+
+                  const ops = ['listOps_map', 'listOps_filter', 'listOps_chainedMapFilter',
+                               'listOps_chainedFilterMap', 'listOps_complexChain'];
+                  for (const op of ops) {
+                    const displayName = op.replace('listOps_', '');
+                    if (current[op]) {
+                      const curr = current[op];
+                      if (baseline[op]) {
+                        const base = baseline[op];
+                        const change = ((curr - base) / base) * 100;
+                        let emoji, sign;
+                        if (change > 5) { emoji = '🟢'; sign = '+'; }
+                        else if (change < -5) { emoji = '🔴'; sign = ''; }
+                        else { emoji = '⚪'; sign = change >= 0 ? '+' : ''; }
+                        comment += `| ${displayName} | ${curr.toFixed(3)} | ${base.toFixed(3)} | ${emoji} ${sign}${change.toFixed(1)}% |\n`;
+                      } else {
+                        comment += `| ${displayName} | ${curr.toFixed(3)} | - | 🆕 new |\n`;
+                      }
+                    }
+                  }
+                  comment += '\n**Legend:** 🟢 >5% faster | ⚪ ±5% | 🔴 >5% slower\n';
+                } else {
+                  comment += '### Throughput Comparison (ops/μs)\n\n';
+                  comment += '| Operation | ListOps | Streams | Speedup |\n';
+                  comment += '|-----------|---------|---------|--------:|\n';
+
+                  const ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain'];
+                  for (const op of ops) {
+                    const lo = current[`listOps_${op}`];
+                    const st = current[`streams_${op}`];
+                    if (lo && st) {
+                      const speedup = lo / st;
+                      const emoji = speedup >= 1.5 ? '🟢' : speedup >= 1.0 ? '🟡' : '🔴';
+                      comment += `| ${op} | ${lo.toFixed(3)} | ${st.toFixed(3)} | ${emoji} ${speedup.toFixed(2)}x |\n`;
+                    }
+                  }
+                  comment += '\n**Legend:** 🟢 1.5x+ faster | 🟡 1.0-1.5x | 🔴 slower\n';
+                  comment += '\n> ℹ️ *No baseline from main branch available for comparison*\n';
                 }
 
-                comment += '### Throughput Comparison (ops/μs)\n\n';
-                comment += '| Operation | ListOps | Streams | Speedup |\n';
-                comment += '|-----------|---------|---------|--------:|\n';
-
-                const ops = ['map', 'filter', 'chainedMapFilter', 'chainedFilterMap', 'complexChain'];
-                for (const op of ops) {
-                  const lo = throughput[`listOps_${op}`];
-                  const st = throughput[`streams_${op}`];
-                  if (lo && st) {
-                    const speedup = lo / st;
-                    const emoji = speedup >= 1.5 ? '🟢' : speedup >= 1.0 ? '🟡' : '🔴';
-                    comment += `| ${op} | ${lo.toFixed(3)} | ${st.toFixed(3)} | ${emoji} ${speedup.toFixed(2)}x |\n`;
-                  }
-                }
-
-                comment += '\n**Legend:** 🟢 1.5x+ faster | 🟡 1.0-1.5x | 🔴 slower\n\n';
-                comment += '---\n';
+                comment += '\n---\n';
                 comment += '*Run locally: `./run-benchmarks.sh --quick`*';
               } catch (e) {
                 comment += '✅ Benchmarks completed. See artifacts for details.\n';
