@@ -29,8 +29,8 @@ Functional operations for `java.util.List`. All methods accept any `Iterable` fo
 | `distinct` | `<T> List<T> distinct(Iterable<T>)` | Remove duplicates (preserve order) |
 | `reverse` | `<T> List<T> reverse(Iterable<T>)` | Reverse order |
 | `partition` | `<T> List<List<T>> partition(Iterable<T>, Predicate<T>)` | Split by predicate |
-| `mapFilter` | `<T,R> List<R> mapFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
-| `filterMap` | `<T,R> List<R> filterMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
+| `mapThenFilter` | `<T,R> List<R> mapThenFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
+| `filterThenMap` | `<T,R> List<R> filterThenMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
 
 ## SetOps
 
@@ -51,8 +51,8 @@ Functional operations for `java.util.Set`. Similar to ListOps but returns `Set`.
 | `zip` | `<A,B,R> Set<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
 | `distinct` | `<T> Set<T> distinct(Iterable<T>)` | Remove duplicates (identity for sets) |
 | `partition` | `<T> List<Set<T>> partition(Iterable<T>, Predicate<T>)` | Split by predicate |
-| `mapFilter` | `<T,R> Set<R> mapFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
-| `filterMap` | `<T,R> Set<R> filterMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
+| `mapThenFilter` | `<T,R> Set<R> mapThenFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
+| `filterThenMap` | `<T,R> Set<R> filterThenMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
 
 **Note**: Uses `LinkedHashSet` internally to preserve insertion order where applicable. Unlike ListOps, SetOps does not have a `reverse()` method as it's not meaningful for sets.
 

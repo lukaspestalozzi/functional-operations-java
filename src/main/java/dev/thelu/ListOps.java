@@ -588,7 +588,7 @@ public final class ListOps {
    *
    * <pre>{@code
    * List<Integer> numbers = List.of(1, 2, 3, 4, 5);
-   * List<Integer> result = ListOps.mapFilter(numbers, n -> n * 2, n -> n > 4);
+   * List<Integer> result = ListOps.mapThenFilter(numbers, n -> n * 2, n -> n > 4);
    * // Result: [6, 8, 10]
    * }</pre>
    *
@@ -600,7 +600,7 @@ public final class ListOps {
    * @return a new list with mapped and filtered elements
    * @throws NullPointerException if any argument is null
    */
-  public static <T, R> List<R> mapFilter(
+  public static <T, R> List<R> mapThenFilter(
       Iterable<? extends T> iterable,
       Function<? super T, ? extends R> mapper,
       Predicate<? super R> predicate) {
@@ -625,7 +625,7 @@ public final class ListOps {
    *
    * <pre>{@code
    * List<Integer> numbers = List.of(1, 2, 3, 4, 5);
-   * List<Integer> result = ListOps.filterMap(numbers, n -> n % 2 == 0, n -> n * 10);
+   * List<Integer> result = ListOps.filterThenMap(numbers, n -> n % 2 == 0, n -> n * 10);
    * // Result: [20, 40]
    * }</pre>
    *
@@ -637,7 +637,7 @@ public final class ListOps {
    * @return a new list with filtered and mapped elements
    * @throws NullPointerException if any argument is null
    */
-  public static <T, R> List<R> filterMap(
+  public static <T, R> List<R> filterThenMap(
       Iterable<? extends T> iterable,
       Predicate<? super T> predicate,
       Function<? super T, ? extends R> mapper) {

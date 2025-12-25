@@ -7,7 +7,7 @@ High-performance functional operations for Java collections. Uses simple for loo
 
 ## Features
 
-- **ListOps**: map, filter (single/varargs), reduce, flatMap, find, any, all, take, drop, zip, distinct, reverse, partition, mapFilter, filterMap
+- **ListOps**: map, filter (single/varargs), reduce, flatMap, find, any, all, take, drop, zip, distinct, reverse, partition, mapThenFilter, filterThenMap
 - **SetOps**: Same operations for Sets, except reverse (all methods accept any Iterable as input)
 - **MapOps**: mapValues, mapKeys, mapEntries, filter, filterKeys, filterValues, reduce, find, any, all, partition, merge, invert, flatMapValues, getOrCompute, take, drop
 

@@ -19,9 +19,9 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Removed reverse() method from SetOps (semantically meaningless for sets). Updated requirements.md and README.md. Removed SetOpsReverseTest.java.
 
 ### Point 3: Rename mapFilter/filterMap
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Rename to mapThenFilter/filterThenMap for clarity
-- **Notes**:
+- **Notes**: Renamed methods in ListOps and SetOps. Renamed test files. Updated requirements.md and README.md.
 
 ### Point 4: Add none() method
 - **Status**: Pending

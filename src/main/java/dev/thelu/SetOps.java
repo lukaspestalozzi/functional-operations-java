@@ -263,7 +263,7 @@ public final class SetOps {
    * @return a new set with mapped and filtered elements
    * @throws NullPointerException if any argument is null
    */
-  public static <T, R> Set<R> mapFilter(
+  public static <T, R> Set<R> mapThenFilter(
       Iterable<? extends T> iterable,
       Function<? super T, ? extends R> mapper,
       Predicate<? super R> predicate) {
@@ -281,7 +281,7 @@ public final class SetOps {
    * @return a new set with filtered and mapped elements
    * @throws NullPointerException if any argument is null
    */
-  public static <T, R> Set<R> filterMap(
+  public static <T, R> Set<R> filterThenMap(
       Iterable<? extends T> iterable,
       Predicate<? super T> predicate,
       Function<? super T, ? extends R> mapper) {
