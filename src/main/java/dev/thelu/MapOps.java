@@ -17,6 +17,9 @@ import java.util.function.Predicate;
 /**
  * Functional operations for Maps. Uses for loops instead of streams for performance. All methods
  * return new maps, never modifying the input.
+ *
+ * @see <a href="../../../../../../requirements.md">requirements.md</a> for complete API
+ *     specification
  */
 public final class MapOps {
 
