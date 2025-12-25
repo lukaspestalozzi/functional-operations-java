@@ -1,5 +1,6 @@
 package dev.thelu;
 
+import dev.thelu.function.TriFunction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -448,18 +449,5 @@ public final class MapOps {
       count++;
     }
     return result;
-  }
-
-  /**
-   * Functional interface for functions taking three arguments.
-   *
-   * @param <T> first argument type
-   * @param <U> second argument type
-   * @param <V> third argument type
-   * @param <R> result type
-   */
-  @FunctionalInterface
-  public interface TriFunction<T, U, V, R> {
-    R apply(T t, U u, V v);
   }
 }
