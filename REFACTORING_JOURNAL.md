@@ -49,14 +49,18 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Decided to keep requirements.md as the authoritative spec and Javadocs for implementation details. Added cross-reference in class-level Javadocs pointing to requirements.md.
 
 ### Point 9: Change package name
-- **Status**: Pending
+- **Status**: Deferred
 - **Goal**: Rename from dev.thelu to dev.thelu.funcops
-- **Notes**:
+- **Notes**: Deferred - this is a breaking API change affecting all imports and documentation. Should be done as a major version bump with proper migration guide.
 
 ### Point 10: Explicit null handling in flatMap
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Document or throw on null mapper results
-- **Notes**:
+- **Notes**: Added explicit documentation that null mapper results are silently skipped. This is consistent with the existing behavior and common patterns (like Optional.flatMap). Updated Javadocs in:
+  - ListOps.flatMap - added paragraph explaining null handling and updated @param
+  - SetOps.flatMap - added paragraph explaining null handling and updated @param
+  - MapOps.flatMapValues - added paragraph explaining null handling and updated @param
+  - IterableOps.flatMap - updated internal comment
 
 ## Commit Log
 

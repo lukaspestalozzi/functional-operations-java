@@ -220,6 +220,9 @@ public final class ListOps {
   /**
    * Maps each element to an iterable and flattens the results into a single list.
    *
+   * <p>If the mapper returns null for any element, that element is silently skipped (no elements
+   * are added to the result for that input). This is consistent with Optional.flatMap behavior.
+   *
    * <p>Example usage:
    *
    * <pre>{@code
@@ -232,7 +235,7 @@ public final class ListOps {
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output list
    * @param iterable the input iterable
-   * @param mapper the function that maps each element to an iterable
+   * @param mapper the function that maps each element to an iterable (may return null)
    * @return a new flattened list
    * @throws NullPointerException if iterable or mapper is null
    */

@@ -96,7 +96,7 @@ public final class IterableOps {
     return result;
   }
 
-  /** Maps each element to an iterable and flattens the results. */
+  /** Maps each element to an iterable and flattens the results. Null mapper results are skipped. */
   public static <T, R, C extends Collection<R>> C flatMap(
       Iterable<? extends T> iterable,
       Function<? super T, ? extends Iterable<? extends R>> mapper,
