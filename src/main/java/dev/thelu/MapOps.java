@@ -248,6 +248,19 @@ public final class MapOps {
   }
 
   /**
+   * Checks if no entries match the predicate.
+   *
+   * @param map the input map
+   * @param predicate predicate to test each key-value pair
+   * @param <K> key type
+   * @param <V> value type
+   * @return true if no entries match, false otherwise (returns true for empty map)
+   */
+  public static <K, V> boolean none(Map<K, V> map, BiPredicate<? super K, ? super V> predicate) {
+    return !any(map, predicate);
+  }
+
+  /**
    * Partitions the map into two maps based on a predicate. The first map contains entries matching
    * the predicate, the second contains entries not matching.
    *

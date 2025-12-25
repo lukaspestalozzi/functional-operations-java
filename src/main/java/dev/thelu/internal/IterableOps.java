@@ -156,6 +156,11 @@ public final class IterableOps {
     return true;
   }
 
+  /** Checks if no elements match the predicate. */
+  public static <T> boolean none(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    return !any(iterable, predicate);
+  }
+
   /** Takes the first n elements. */
   public static <T, C extends Collection<T>> C take(
       Iterable<? extends T> iterable, int n, Supplier<C> collectionFactory) {

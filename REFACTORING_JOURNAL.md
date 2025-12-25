@@ -24,9 +24,9 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Renamed methods in ListOps and SetOps. Renamed test files. Updated requirements.md and README.md.
 
 ### Point 4: Add none() method
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Add none() as complement to any() and all()
-- **Notes**:
+- **Notes**: Added none() method to ListOps, SetOps, MapOps. Created test files for each. Updated requirements.md and README.md.
 
 ### Point 5: Consolidate test files
 - **Status**: Pending

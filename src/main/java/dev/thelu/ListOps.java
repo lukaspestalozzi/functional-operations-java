@@ -371,6 +371,27 @@ public final class ListOps {
   }
 
   /**
+   * Checks if no elements in the iterable match the predicate.
+   *
+   * <p>Example usage:
+   *
+   * <pre>{@code
+   * List<Integer> numbers = List.of(1, 3, 5, 7);
+   * boolean noEven = ListOps.none(numbers, n -> n % 2 == 0);
+   * // Result: true
+   * }</pre>
+   *
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to check
+   * @param predicate the condition to match
+   * @return true if no elements match, false otherwise (returns true for empty iterable)
+   * @throws NullPointerException if iterable or predicate is null
+   */
+  public static <T> boolean none(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    return !any(iterable, predicate);
+  }
+
+  /**
    * Returns the first n elements of the iterable.
    *
    * <p>Example usage:

@@ -23,6 +23,7 @@ Functional operations for `java.util.List`. All methods accept any `Iterable` fo
 | `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | First matching element |
 | `any` | `<T> boolean any(Iterable<T>, Predicate<T>)` | Any element matches |
 | `all` | `<T> boolean all(Iterable<T>, Predicate<T>)` | All elements match |
+| `none` | `<T> boolean none(Iterable<T>, Predicate<T>)` | No elements match |
 | `take` | `<T> List<T> take(Iterable<T>, int)` | First n elements |
 | `drop` | `<T> List<T> drop(Iterable<T>, int)` | Skip first n elements |
 | `zip` | `<A,B,R> List<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
@@ -46,6 +47,7 @@ Functional operations for `java.util.Set`. Similar to ListOps but returns `Set`.
 | `find` | `<T> Optional<T> find(Iterable<T>, Predicate<T>)` | Any matching element |
 | `any` | `<T> boolean any(Iterable<T>, Predicate<T>)` | Any element matches |
 | `all` | `<T> boolean all(Iterable<T>, Predicate<T>)` | All elements match |
+| `none` | `<T> boolean none(Iterable<T>, Predicate<T>)` | No elements match |
 | `take` | `<T> Set<T> take(Iterable<T>, int)` | Take n elements |
 | `drop` | `<T> Set<T> drop(Iterable<T>, int)` | Drop n elements |
 | `zip` | `<A,B,R> Set<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
@@ -72,6 +74,7 @@ Functional operations for `java.util.Map`.
 | `find` | `<K,V> Optional<Entry<K,V>> find(Map<K,V>, BiPredicate<K,V>)` | First matching entry |
 | `any` | `<K,V> boolean any(Map<K,V>, BiPredicate<K,V>)` | Any entry matches |
 | `all` | `<K,V> boolean all(Map<K,V>, BiPredicate<K,V>)` | All entries match |
+| `none` | `<K,V> boolean none(Map<K,V>, BiPredicate<K,V>)` | No entries match |
 | `partition` | `<K,V> List<Map<K,V>> partition(Map<K,V>, BiPredicate<K,V>)` | Split by predicate |
 | `merge` | `<K,V> Map<K,V> merge(Map<K,V>, Map<K,V>, BiFunction<V,V,V>)` | Merge with combiner |
 | `invert` | `<K,V> Map<V,K> invert(Map<K,V>)` | Swap keys and values |
