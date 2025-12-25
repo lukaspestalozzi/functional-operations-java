@@ -8,63 +8,63 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("SetOps.mapFilter")
-class SetOpsMapFilterTest {
+@DisplayName("SetOps.mapThenFilter")
+class SetOpsMapThenFilterTest {
 
   @Test
   @DisplayName("should map then filter in single pass")
-  void testMapFilter() {
+  void testMapThenFilter() {
     Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
 
-    Set<Integer> result = SetOps.mapFilter(numbers, n -> n * 2, n -> n > 4);
+    Set<Integer> result = SetOps.mapThenFilter(numbers, n -> n * 2, n -> n > 4);
 
     assertThat(result).containsExactlyInAnyOrder(6, 8, 10);
   }
 
   @Test
   @DisplayName("should handle empty set")
-  void testMapFilterEmptySet() {
+  void testMapThenFilterEmptySet() {
     Set<Integer> empty = Set.of();
 
-    Set<Integer> result = SetOps.mapFilter(empty, n -> n * 2, n -> true);
+    Set<Integer> result = SetOps.mapThenFilter(empty, n -> n * 2, n -> true);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   @DisplayName("should handle no matches after filter")
-  void testMapFilterNoMatches() {
+  void testMapThenFilterNoMatches() {
     Set<Integer> numbers = Set.of(1, 2, 3);
 
-    Set<Integer> result = SetOps.mapFilter(numbers, n -> n * 2, n -> n > 100);
+    Set<Integer> result = SetOps.mapThenFilter(numbers, n -> n * 2, n -> n > 100);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   @DisplayName("should throw NullPointerException when set is null")
-  void testMapFilterNullSet() {
-    assertThatThrownBy(() -> SetOps.mapFilter(null, n -> n, n -> true))
+  void testMapThenFilterNullSet() {
+    assertThatThrownBy(() -> SetOps.mapThenFilter(null, n -> n, n -> true))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("iterable");
   }
 
   @Test
   @DisplayName("should throw NullPointerException when mapper is null")
-  void testMapFilterNullMapper() {
+  void testMapThenFilterNullMapper() {
     Set<Integer> numbers = Set.of(1, 2, 3);
 
-    assertThatThrownBy(() -> SetOps.mapFilter(numbers, null, n -> true))
+    assertThatThrownBy(() -> SetOps.mapThenFilter(numbers, null, n -> true))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("mapper");
   }
 
   @Test
   @DisplayName("should throw NullPointerException when predicate is null")
-  void testMapFilterNullPredicate() {
+  void testMapThenFilterNullPredicate() {
     Set<Integer> numbers = Set.of(1, 2, 3);
 
-    assertThatThrownBy(() -> SetOps.mapFilter(numbers, n -> n, null))
+    assertThatThrownBy(() -> SetOps.mapThenFilter(numbers, n -> n, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("predicate");
   }
