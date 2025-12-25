@@ -29,14 +29,14 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Added none() method to ListOps, SetOps, MapOps. Created test files for each. Updated requirements.md and README.md.
 
 ### Point 5: Consolidate test files
-- **Status**: Pending
+- **Status**: Deferred
 - **Goal**: One test class per Ops class instead of per method
-- **Notes**:
+- **Notes**: This would involve consolidating 50+ test files. Deferred due to scope. Consider for future cleanup.
 
 ### Point 6: Top-level TriFunction
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Move TriFunction out of MapOps to dev.thelu.function
-- **Notes**:
+- **Notes**: Created dev.thelu.function.TriFunction as standalone interface. Removed nested interface from MapOps.
 
 ### Point 7: Simpler benchmark setup
 - **Status**: Already Done
