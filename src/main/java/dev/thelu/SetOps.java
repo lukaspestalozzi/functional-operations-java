@@ -1,7 +1,6 @@
 package dev.thelu;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -219,28 +218,6 @@ public final class SetOps {
       result.add(element);
     }
     return result;
-  }
-
-  /**
-   * Returns the iterable elements in reverse iteration order.
-   *
-   * <p>Note: This method reverses the iteration order of the input. For unordered sets, the result
-   * may not be meaningful.
-   *
-   * @param <T> the type of elements in the iterable
-   * @param iterable the input iterable
-   * @return a new set with elements in reverse iteration order
-   * @throws NullPointerException if iterable is null
-   */
-  public static <T> Set<T> reverse(Iterable<? extends T> iterable) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-
-    List<T> temp = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      temp.add(element);
-    }
-    Collections.reverse(temp);
-    return new LinkedHashSet<>(temp);
   }
 
   /**

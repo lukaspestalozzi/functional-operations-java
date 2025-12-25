@@ -14,9 +14,9 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Created `dev.thelu.internal.IterableOps` with shared implementations using Supplier<C> for collection factory. SetOps now delegates to IterableOps. ListOps keeps its RandomAccess optimizations for performance.
 
 ### Point 2: Remove SetOps.reverse()
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Remove meaningless reverse() method from SetOps
-- **Notes**:
+- **Notes**: Removed reverse() method from SetOps (semantically meaningless for sets). Updated requirements.md and README.md. Removed SetOpsReverseTest.java.
 
 ### Point 3: Rename mapFilter/filterMap
 - **Status**: Pending

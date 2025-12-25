@@ -34,7 +34,7 @@ Functional operations for `java.util.List`. All methods accept any `Iterable` fo
 
 ## SetOps
 
-Functional operations for `java.util.Set`. Same methods as ListOps but returns `Set`. All methods accept any `Iterable` for maximum flexibility.
+Functional operations for `java.util.Set`. Similar to ListOps but returns `Set`. All methods accept any `Iterable` for maximum flexibility.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -50,12 +50,11 @@ Functional operations for `java.util.Set`. Same methods as ListOps but returns `
 | `drop` | `<T> Set<T> drop(Iterable<T>, int)` | Drop n elements |
 | `zip` | `<A,B,R> Set<R> zip(Iterable<A>, Iterable<B>, BiFunction<A,B,R>)` | Combine two iterables |
 | `distinct` | `<T> Set<T> distinct(Iterable<T>)` | Remove duplicates (identity for sets) |
-| `reverse` | `<T> Set<T> reverse(Iterable<T>)` | Identity (sets unordered) |
 | `partition` | `<T> List<Set<T>> partition(Iterable<T>, Predicate<T>)` | Split by predicate |
 | `mapFilter` | `<T,R> Set<R> mapFilter(Iterable<T>, Function<T,R>, Predicate<R>)` | Map then filter |
 | `filterMap` | `<T,R> Set<R> filterMap(Iterable<T>, Predicate<T>, Function<T,R>)` | Filter then map |
 
-**Note**: Uses `LinkedHashSet` internally to preserve insertion order where applicable.
+**Note**: Uses `LinkedHashSet` internally to preserve insertion order where applicable. Unlike ListOps, SetOps does not have a `reverse()` method as it's not meaningful for sets.
 
 ## MapOps
 
