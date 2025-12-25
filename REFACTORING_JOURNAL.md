@@ -9,9 +9,9 @@ Implementing 10 improvement points identified during project retrospective.
 ## Progress
 
 ### Point 1: Reduce duplication between ListOps/SetOps
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Create shared internal implementation with collector/factory pattern
-- **Notes**:
+- **Notes**: Created `dev.thelu.internal.IterableOps` with shared implementations using Supplier<C> for collection factory. SetOps now delegates to IterableOps. ListOps keeps its RandomAccess optimizations for performance.
 
 ### Point 2: Remove SetOps.reverse()
 - **Status**: Pending

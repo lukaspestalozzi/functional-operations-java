@@ -1,8 +1,7 @@
 package dev.thelu;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +10,8 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import dev.thelu.internal.IterableOps;
 
 /**
  * Functional operations for Java sets, implemented with normal for loops for performance. All
@@ -33,24 +34,17 @@ public final class SetOps {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
   }
 
-  /**
-   * Returns the size of the iterable if known, otherwise returns the default capacity. This allows
-   * pre-sizing of result collections to avoid rehashing overhead.
-   */
+  /** Returns the size of the iterable if known, otherwise returns the default capacity. */
   private static int initialCapacity(Iterable<?> iterable) {
-    return (iterable instanceof Collection) ? ((Collection<?>) iterable).size() : DEFAULT_CAPACITY;
+    return IterableOps.initialCapacity(iterable);
+  }
+
+  private static <T> LinkedHashSet<T> newSet(Iterable<?> iterable) {
+    return new LinkedHashSet<>(initialCapacity(iterable));
   }
 
   /**
    * Transforms each element in the input iterable using the provided mapper function.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3);
-   * Set<Integer> doubled = SetOps.map(numbers, n -> n * 2);
-   * // Result: {2, 4, 6}
-   * }</pre>
    *
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output set
@@ -61,26 +55,11 @@ public final class SetOps {
    */
   public static <T, R> Set<R> map(
       Iterable<? extends T> iterable, Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      result.add(mapper.apply(element));
-    }
-    return result;
+    return IterableOps.map(iterable, mapper, () -> newSet(iterable));
   }
 
   /**
    * Filters elements in the input iterable based on the provided predicate.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5, 6);
-   * Set<Integer> evens = SetOps.filter(numbers, n -> n % 2 == 0);
-   * // Result: {2, 4, 6}
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable to filter
@@ -89,32 +68,11 @@ public final class SetOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> Set<T> filter(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        result.add(element);
-      }
-    }
-    return result;
+    return IterableOps.filter(iterable, predicate, () -> newSet(iterable));
   }
 
   /**
    * Filters elements in the input iterable based on multiple predicates (AND logic).
-   *
-   * <p>Elements must satisfy ALL predicates to be included in the result.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-   * Set<Integer> result = SetOps.filter(numbers,
-   *     n -> n % 2 == 0,  // even
-   *     n -> n > 4);      // greater than 4
-   * // Result: {6, 8, 10}
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable to filter
@@ -125,35 +83,11 @@ public final class SetOps {
   @SafeVarargs
   public static <T> Set<T> filter(
       Iterable<? extends T> iterable, Predicate<? super T>... predicates) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicates, "predicates must not be null");
-    for (Predicate<? super T> predicate : predicates) {
-      Objects.requireNonNull(predicate, "predicate must not be null");
-    }
-
-    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
-    outer:
-    for (T element : iterable) {
-      for (Predicate<? super T> predicate : predicates) {
-        if (!predicate.test(element)) {
-          continue outer;
-        }
-      }
-      result.add(element);
-    }
-    return result;
+    return IterableOps.filterAll(iterable, () -> newSet(iterable), predicates);
   }
 
   /**
    * Reduces the iterable to a single value by applying the accumulator function.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4);
-   * Integer sum = SetOps.reduce(numbers, 0, Integer::sum);
-   * // Result: 10
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param <R> the type of the result
@@ -165,26 +99,11 @@ public final class SetOps {
    */
   public static <T, R> R reduce(
       Iterable<? extends T> iterable, R identity, BiFunction<R, ? super T, R> accumulator) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(accumulator, "accumulator must not be null");
-
-    R result = identity;
-    for (T element : iterable) {
-      result = accumulator.apply(result, element);
-    }
-    return result;
+    return IterableOps.reduce(iterable, identity, accumulator);
   }
 
   /**
    * Maps each element to an iterable and flattens the results into a single set.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3);
-   * Set<Integer> result = SetOps.flatMap(numbers, n -> Set.of(n, n * 10));
-   * // Result: {1, 10, 2, 20, 3, 30}
-   * }</pre>
    *
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output set
@@ -195,31 +114,11 @@ public final class SetOps {
    */
   public static <T, R> Set<R> flatMap(
       Iterable<? extends T> iterable, Function<? super T, ? extends Iterable<? extends R>> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      Iterable<? extends R> mapped = mapper.apply(element);
-      if (mapped != null) {
-        for (R item : mapped) {
-          result.add(item);
-        }
-      }
-    }
-    return result;
+    return IterableOps.flatMap(iterable, mapper, () -> newSet(iterable));
   }
 
   /**
    * Finds an element matching the predicate.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Optional<Integer> found = SetOps.find(numbers, n -> n > 3);
-   * // Result: Optional[4] or Optional[5] (order not guaranteed)
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable to search
@@ -229,27 +128,11 @@ public final class SetOps {
    */
   public static <T> Optional<T> find(
       Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        return Optional.of(element);
-      }
-    }
-    return Optional.empty();
+    return IterableOps.find(iterable, predicate);
   }
 
   /**
    * Checks if any element in the iterable matches the predicate.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * boolean hasEven = SetOps.any(numbers, n -> n % 2 == 0);
-   * // Result: true
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable to check
@@ -258,27 +141,11 @@ public final class SetOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> boolean any(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        return true;
-      }
-    }
-    return false;
+    return IterableOps.any(iterable, predicate);
   }
 
   /**
    * Checks if all elements in the iterable match the predicate.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(2, 4, 6, 8);
-   * boolean allEven = SetOps.all(numbers, n -> n % 2 == 0);
-   * // Result: true
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable to check
@@ -287,29 +154,11 @@ public final class SetOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> boolean all(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    for (T element : iterable) {
-      if (!predicate.test(element)) {
-        return false;
-      }
-    }
-    return true;
+    return IterableOps.all(iterable, predicate);
   }
 
   /**
    * Returns n elements from the iterable.
-   *
-   * <p>Note: The order of elements depends on the iterable's iteration order.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Set<Integer> some = SetOps.take(numbers, 3);
-   * // Result: 3 elements from the set
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable
@@ -319,39 +168,11 @@ public final class SetOps {
    * @throws IllegalArgumentException if n is negative
    */
   public static <T> Set<T> take(Iterable<? extends T> iterable, int n) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    if (n < 0) {
-      throw new IllegalArgumentException("n must not be negative");
-    }
-
-    int capacity =
-        (iterable instanceof Collection)
-            ? Math.min(n, ((Collection<?>) iterable).size())
-            : Math.min(n, DEFAULT_CAPACITY);
-    Set<T> result = new LinkedHashSet<>(capacity);
-    int count = 0;
-    for (T element : iterable) {
-      if (count >= n) {
-        break;
-      }
-      result.add(element);
-      count++;
-    }
-    return result;
+    return IterableOps.take(iterable, n, LinkedHashSet::new);
   }
 
   /**
    * Returns the iterable without the first n elements (iteration order).
-   *
-   * <p>Note: The order of elements depends on the iterable's iteration order.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Set<Integer> remaining = SetOps.drop(numbers, 2);
-   * // Result: set.size() - 2 elements
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable
@@ -361,39 +182,11 @@ public final class SetOps {
    * @throws IllegalArgumentException if n is negative
    */
   public static <T> Set<T> drop(Iterable<? extends T> iterable, int n) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    if (n < 0) {
-      throw new IllegalArgumentException("n must not be negative");
-    }
-
-    int capacity =
-        (iterable instanceof Collection)
-            ? Math.max(0, ((Collection<?>) iterable).size() - n)
-            : DEFAULT_CAPACITY;
-    Set<T> result = new LinkedHashSet<>(capacity);
-    int count = 0;
-    for (T element : iterable) {
-      if (count >= n) {
-        result.add(element);
-      }
-      count++;
-    }
-    return result;
+    return IterableOps.drop(iterable, n, LinkedHashSet::new);
   }
 
   /**
    * Combines two iterables element-wise using the provided combiner function.
-   *
-   * <p>Note: The pairing is based on iteration order.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> a = Set.of(1, 2, 3);
-   * Set<Integer> b = Set.of(10, 20, 30);
-   * Set<Integer> sums = SetOps.zip(a, b, Integer::sum);
-   * // Result: set of combined elements
-   * }</pre>
    *
    * @param <A> the type of elements in the first iterable
    * @param <B> the type of elements in the second iterable
@@ -408,30 +201,11 @@ public final class SetOps {
       Iterable<? extends A> iterableA,
       Iterable<? extends B> iterableB,
       BiFunction<? super A, ? super B, ? extends R> combiner) {
-    Objects.requireNonNull(iterableA, "iterableA must not be null");
-    Objects.requireNonNull(iterableB, "iterableB must not be null");
-    Objects.requireNonNull(combiner, "combiner must not be null");
-
-    int capacity = Math.min(initialCapacity(iterableA), initialCapacity(iterableB));
-    Set<R> result = new LinkedHashSet<>(capacity);
-    Iterator<? extends A> iterA = iterableA.iterator();
-    Iterator<? extends B> iterB = iterableB.iterator();
-    while (iterA.hasNext() && iterB.hasNext()) {
-      result.add(combiner.apply(iterA.next(), iterB.next()));
-    }
-    return result;
+    return IterableOps.zip(iterableA, iterableB, combiner, LinkedHashSet::new);
   }
 
   /**
    * Returns a set with duplicate elements removed (sets are already distinct by definition).
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4);
-   * Set<Integer> same = SetOps.distinct(numbers);
-   * // Result: {1, 2, 3, 4}
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable
@@ -440,8 +214,7 @@ public final class SetOps {
    */
   public static <T> Set<T> distinct(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
-
-    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
+    Set<T> result = newSet(iterable);
     for (T element : iterable) {
       result.add(element);
     }
@@ -449,41 +222,29 @@ public final class SetOps {
   }
 
   /**
-   * Returns the iterable elements in a set (sets have no inherent order to reverse).
+   * Returns the iterable elements in reverse iteration order.
    *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Set<Integer> same = SetOps.reverse(numbers);
-   * // Result: same elements, no order change
-   * }</pre>
+   * <p>Note: This method reverses the iteration order of the input. For unordered sets, the result
+   * may not be meaningful.
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable
-   * @return a new set with the same elements
+   * @return a new set with elements in reverse iteration order
    * @throws NullPointerException if iterable is null
    */
   public static <T> Set<T> reverse(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    Set<T> result = new LinkedHashSet<>(initialCapacity(iterable));
+    List<T> temp = new ArrayList<>(initialCapacity(iterable));
     for (T element : iterable) {
-      result.add(element);
+      temp.add(element);
     }
-    return result;
+    Collections.reverse(temp);
+    return new LinkedHashSet<>(temp);
   }
 
   /**
    * Partitions the iterable into two sets based on the predicate.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5, 6);
-   * List<Set<Integer>> parts = SetOps.partition(numbers, n -> n % 2 == 0);
-   * // Result: [{2, 4, 6}, {1, 3, 5}]
-   * }</pre>
    *
    * @param <T> the type of elements in the iterable
    * @param iterable the input iterable
@@ -517,14 +278,6 @@ public final class SetOps {
   /**
    * Applies map then filter in a single pass for better performance.
    *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Set<Integer> result = SetOps.mapFilter(numbers, n -> n * 2, n -> n > 4);
-   * // Result: {6, 8, 10}
-   * }</pre>
-   *
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output set
    * @param iterable the input iterable
@@ -537,30 +290,11 @@ public final class SetOps {
       Iterable<? extends T> iterable,
       Function<? super T, ? extends R> mapper,
       Predicate<? super R> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      R mapped = mapper.apply(element);
-      if (predicate.test(mapped)) {
-        result.add(mapped);
-      }
-    }
-    return result;
+    return IterableOps.mapThenFilter(iterable, mapper, predicate, () -> newSet(iterable));
   }
 
   /**
    * Applies filter then map in a single pass for better performance.
-   *
-   * <p>Example usage:
-   *
-   * <pre>{@code
-   * Set<Integer> numbers = Set.of(1, 2, 3, 4, 5);
-   * Set<Integer> result = SetOps.filterMap(numbers, n -> n % 2 == 0, n -> n * 10);
-   * // Result: {20, 40}
-   * }</pre>
    *
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output set
@@ -574,16 +308,6 @@ public final class SetOps {
       Iterable<? extends T> iterable,
       Predicate<? super T> predicate,
       Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    Set<R> result = new LinkedHashSet<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        result.add(mapper.apply(element));
-      }
-    }
-    return result;
+    return IterableOps.filterThenMap(iterable, predicate, mapper, () -> newSet(iterable));
   }
 }
