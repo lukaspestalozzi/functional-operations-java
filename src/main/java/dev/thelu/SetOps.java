@@ -106,10 +106,13 @@ public final class SetOps {
   /**
    * Maps each element to an iterable and flattens the results into a single set.
    *
+   * <p>If the mapper returns null for any element, that element is silently skipped (no elements
+   * are added to the result for that input). This is consistent with Optional.flatMap behavior.
+   *
    * @param <T> the type of elements in the input iterable
    * @param <R> the type of elements in the output set
    * @param iterable the input iterable
-   * @param mapper the function that maps each element to an iterable
+   * @param mapper the function that maps each element to an iterable (may return null)
    * @return a new flattened set
    * @throws NullPointerException if iterable or mapper is null
    */

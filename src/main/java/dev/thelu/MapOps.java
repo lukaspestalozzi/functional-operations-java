@@ -1,6 +1,5 @@
 package dev.thelu;
 
-import dev.thelu.function.TriFunction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +12,8 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import dev.thelu.function.TriFunction;
 
 /**
  * Functional operations for Maps. Uses for loops instead of streams for performance. All methods
@@ -349,12 +350,16 @@ public final class MapOps {
    * Flat maps over values, producing multiple values per key. Each value is mapped to a collection,
    * and all results are collected into a list of entries.
    *
+   * <p>If the mapper returns null for any value, that entry is silently skipped (no entries are
+   * added to the result for that input). This is consistent with Optional.flatMap behavior.
+   *
    * @param map the input map
-   * @param mapper function to map each value to a collection
+   * @param mapper function to map each value to a collection (may return null)
    * @param <K> key type
    * @param <V> value type
    * @param <R> result value type
    * @return list of all key-value pairs after flat mapping
+   * @throws NullPointerException if map or mapper is null
    */
   public static <K, V, R> List<Map.Entry<K, R>> flatMapValues(
       Map<K, V> map, Function<? super V, ? extends Collection<? extends R>> mapper) {
