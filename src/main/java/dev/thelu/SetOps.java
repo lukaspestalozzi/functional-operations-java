@@ -23,6 +23,8 @@ import dev.thelu.internal.IterableOps;
  *
  * @author Lukas Pestalozzi
  * @since 1.0.0
+ * @see <a href="../../../../../../requirements.md">requirements.md</a> for complete API
+ *     specification
  */
 public final class SetOps {
 

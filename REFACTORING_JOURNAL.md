@@ -44,9 +44,9 @@ Implementing 10 improvement points identified during project retrospective.
 - **Notes**: Already implemented with run-benchmarks.sh
 
 ### Point 8: Single source of truth for docs
-- **Status**: Pending
+- **Status**: Complete
 - **Goal**: Reduce duplication between requirements.md and Javadocs
-- **Notes**:
+- **Notes**: Decided to keep requirements.md as the authoritative spec and Javadocs for implementation details. Added cross-reference in class-level Javadocs pointing to requirements.md.
 
 ### Point 9: Change package name
 - **Status**: Pending
