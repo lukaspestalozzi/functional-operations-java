@@ -157,6 +157,19 @@ public final class SetOps {
   }
 
   /**
+   * Checks if no elements in the iterable match the predicate.
+   *
+   * @param <T> the type of elements in the iterable
+   * @param iterable the input iterable to check
+   * @param predicate the condition to match
+   * @return true if no elements match, false otherwise (returns true for empty iterable)
+   * @throws NullPointerException if iterable or predicate is null
+   */
+  public static <T> boolean none(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
+    return IterableOps.none(iterable, predicate);
+  }
+
+  /**
    * Returns n elements from the iterable.
    *
    * @param <T> the type of elements in the iterable

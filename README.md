@@ -7,9 +7,9 @@ High-performance functional operations for Java collections. Uses simple for loo
 
 ## Features
 
-- **ListOps**: map, filter (single/varargs), reduce, flatMap, find, any, all, take, drop, zip, distinct, reverse, partition, mapThenFilter, filterThenMap
+- **ListOps**: map, filter (single/varargs), reduce, flatMap, find, any, all, none, take, drop, zip, distinct, reverse, partition, mapThenFilter, filterThenMap
 - **SetOps**: Same operations for Sets, except reverse (all methods accept any Iterable as input)
-- **MapOps**: mapValues, mapKeys, mapEntries, filter, filterKeys, filterValues, reduce, find, any, all, partition, merge, invert, flatMapValues, getOrCompute, take, drop
+- **MapOps**: mapValues, mapKeys, mapEntries, filter, filterKeys, filterValues, reduce, find, any, all, none, partition, merge, invert, flatMapValues, getOrCompute, take, drop
 
 ## Quick Start
 
@@ -57,9 +57,9 @@ cd functional-operations-java
 
 ```
 src/main/java/dev/thelu/
-├── ListOps.java    # List operations (16 methods)
-├── SetOps.java     # Set operations (15 methods)
-└── MapOps.java     # Map operations (17 methods)
+├── ListOps.java    # List operations (17 methods)
+├── SetOps.java     # Set operations (16 methods)
+└── MapOps.java     # Map operations (18 methods)
 
 src/test/java/dev/thelu/
 ├── ListOps*Test.java   # One test file per ListOps method
