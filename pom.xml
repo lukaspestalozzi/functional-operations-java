@@ -33,6 +33,17 @@
     <url>https://github.com/lukaspestalozzi/functional-operations-java</url>
   </scm>
 
+  <distributionManagement>
+    <repository>
+      <id>central</id>
+      <url>https://central.sonatype.com</url>
+    </repository>
+    <snapshotRepository>
+      <id>central</id>
+      <url>https://central.sonatype.com</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
@@ -53,6 +64,9 @@
     <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+    <central-publishing-plugin.version>0.6.0</central-publishing-plugin.version>
+    <versions-maven-plugin.version>2.17.1</versions-maven-plugin.version>
 
     <!-- Benchmark versions -->
     <jmh.version>1.37</jmh.version>
@@ -266,7 +280,7 @@
   </build>
 
   <profiles>
-    <!-- Release Profile -->
+    <!-- Release Profile for Maven Central deployment -->
     <profile>
       <id>release</id>
       <build>
@@ -304,6 +318,42 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+
+          <!-- GPG Signing Plugin -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <configuration>
+              <!-- Required for CI environments without TTY -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Central Publishing Plugin (Sonatype Central Portal) -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${central-publishing-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+            </configuration>
           </plugin>
         </plugins>
       </build>
