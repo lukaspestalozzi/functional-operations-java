@@ -1,17 +1,16 @@
 package dev.thelu;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.RandomAccess;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import dev.thelu.internal.IterableOps;
 
 /**
  * Functional operations for Java lists, implemented with normal for loops for performance. All
@@ -28,27 +27,9 @@ import java.util.function.Predicate;
  */
 public final class ListOps {
 
-  private static final int DEFAULT_CAPACITY = 16;
-
   /** Private constructor to prevent instantiation of utility class. */
   private ListOps() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
-  }
-
-  /**
-   * Returns the size of the iterable if known, otherwise returns the default capacity. This allows
-   * pre-sizing of result collections to avoid array resizing overhead.
-   */
-  private static int initialCapacity(Iterable<?> iterable) {
-    return (iterable instanceof Collection) ? ((Collection<?>) iterable).size() : DEFAULT_CAPACITY;
-  }
-
-  /**
-   * Returns true if the iterable supports fast random access (like ArrayList). Index-based
-   * iteration is faster for these collections as it avoids iterator object creation.
-   */
-  private static boolean isRandomAccess(Iterable<?> iterable) {
-    return iterable instanceof List && iterable instanceof RandomAccess;
   }
 
   /**
@@ -71,24 +52,8 @@ public final class ListOps {
    */
   public static <T, R> List<R> map(
       Iterable<? extends T> iterable, Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      int size = list.size();
-      List<R> result = new ArrayList<>(size);
-      for (int i = 0; i < size; i++) {
-        result.add(mapper.apply(list.get(i)));
-      }
-      return result;
-    }
-
-    List<R> result = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      result.add(mapper.apply(element));
-    }
-    return result;
+    return IterableOps.map(
+        iterable, mapper, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)));
   }
 
   /**
@@ -109,29 +74,8 @@ public final class ListOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> List<T> filter(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      int size = list.size();
-      List<T> result = new ArrayList<>(size);
-      for (int i = 0; i < size; i++) {
-        T element = list.get(i);
-        if (predicate.test(element)) {
-          result.add(element);
-        }
-      }
-      return result;
-    }
-
-    List<T> result = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        result.add(element);
-      }
-    }
-    return result;
+    return IterableOps.filter(
+        iterable, predicate, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)));
   }
 
   /**
@@ -158,23 +102,8 @@ public final class ListOps {
   @SafeVarargs
   public static <T> List<T> filter(
       Iterable<? extends T> iterable, Predicate<? super T>... predicates) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicates, "predicates must not be null");
-    for (Predicate<? super T> predicate : predicates) {
-      Objects.requireNonNull(predicate, "predicate must not be null");
-    }
-
-    List<T> result = new ArrayList<>(initialCapacity(iterable));
-    outer:
-    for (T element : iterable) {
-      for (Predicate<? super T> predicate : predicates) {
-        if (!predicate.test(element)) {
-          continue outer;
-        }
-      }
-      result.add(element);
-    }
-    return result;
+    return IterableOps.filterAll(
+        iterable, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)), predicates);
   }
 
   /**
@@ -198,23 +127,7 @@ public final class ListOps {
    */
   public static <T, R> R reduce(
       Iterable<? extends T> iterable, R identity, BiFunction<R, ? super T, R> accumulator) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(accumulator, "accumulator must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      R result = identity;
-      for (int i = 0, size = list.size(); i < size; i++) {
-        result = accumulator.apply(result, list.get(i));
-      }
-      return result;
-    }
-
-    R result = identity;
-    for (T element : iterable) {
-      result = accumulator.apply(result, element);
-    }
-    return result;
+    return IterableOps.reduce(iterable, identity, accumulator);
   }
 
   /**
@@ -241,19 +154,8 @@ public final class ListOps {
    */
   public static <T, R> List<R> flatMap(
       Iterable<? extends T> iterable, Function<? super T, ? extends Iterable<? extends R>> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    List<R> result = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      Iterable<? extends R> mapped = mapper.apply(element);
-      if (mapped != null) {
-        for (R item : mapped) {
-          result.add(item);
-        }
-      }
-    }
-    return result;
+    return IterableOps.flatMap(
+        iterable, mapper, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)));
   }
 
   /**
@@ -275,26 +177,7 @@ public final class ListOps {
    */
   public static <T> Optional<T> find(
       Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      for (int i = 0, size = list.size(); i < size; i++) {
-        T element = list.get(i);
-        if (predicate.test(element)) {
-          return Optional.of(element);
-        }
-      }
-      return Optional.empty();
-    }
-
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        return Optional.of(element);
-      }
-    }
-    return Optional.empty();
+    return IterableOps.find(iterable, predicate);
   }
 
   /**
@@ -315,25 +198,7 @@ public final class ListOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> boolean any(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      for (int i = 0, size = list.size(); i < size; i++) {
-        if (predicate.test(list.get(i))) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        return true;
-      }
-    }
-    return false;
+    return IterableOps.any(iterable, predicate);
   }
 
   /**
@@ -354,25 +219,7 @@ public final class ListOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> boolean all(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    if (isRandomAccess(iterable)) {
-      List<? extends T> list = (List<? extends T>) iterable;
-      for (int i = 0, size = list.size(); i < size; i++) {
-        if (!predicate.test(list.get(i))) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    for (T element : iterable) {
-      if (!predicate.test(element)) {
-        return false;
-      }
-    }
-    return true;
+    return IterableOps.all(iterable, predicate);
   }
 
   /**
@@ -393,7 +240,7 @@ public final class ListOps {
    * @throws NullPointerException if iterable or predicate is null
    */
   public static <T> boolean none(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
-    return !any(iterable, predicate);
+    return IterableOps.none(iterable, predicate);
   }
 
   /**
@@ -415,25 +262,8 @@ public final class ListOps {
    * @throws IllegalArgumentException if n is negative
    */
   public static <T> List<T> take(Iterable<? extends T> iterable, int n) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    if (n < 0) {
-      throw new IllegalArgumentException("n must not be negative");
-    }
-
-    int capacity =
-        (iterable instanceof Collection)
-            ? Math.min(n, ((Collection<?>) iterable).size())
-            : Math.min(n, DEFAULT_CAPACITY);
-    List<T> result = new ArrayList<>(capacity);
-    int count = 0;
-    for (T element : iterable) {
-      if (count >= n) {
-        break;
-      }
-      result.add(element);
-      count++;
-    }
-    return result;
+    int capacity = Math.max(0, Math.min(n, IterableOps.initialCapacity(iterable)));
+    return IterableOps.take(iterable, n, () -> new ArrayList<>(capacity));
   }
 
   /**
@@ -455,24 +285,8 @@ public final class ListOps {
    * @throws IllegalArgumentException if n is negative
    */
   public static <T> List<T> drop(Iterable<? extends T> iterable, int n) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    if (n < 0) {
-      throw new IllegalArgumentException("n must not be negative");
-    }
-
-    int capacity =
-        (iterable instanceof Collection)
-            ? Math.max(0, ((Collection<?>) iterable).size() - n)
-            : DEFAULT_CAPACITY;
-    List<T> result = new ArrayList<>(capacity);
-    int count = 0;
-    for (T element : iterable) {
-      if (count >= n) {
-        result.add(element);
-      }
-      count++;
-    }
-    return result;
+    int capacity = Math.max(0, IterableOps.initialCapacity(iterable) - n);
+    return IterableOps.drop(iterable, n, () -> new ArrayList<>(capacity));
   }
 
   /**
@@ -500,18 +314,9 @@ public final class ListOps {
       Iterable<? extends A> iterableA,
       Iterable<? extends B> iterableB,
       BiFunction<? super A, ? super B, ? extends R> combiner) {
-    Objects.requireNonNull(iterableA, "iterableA must not be null");
-    Objects.requireNonNull(iterableB, "iterableB must not be null");
-    Objects.requireNonNull(combiner, "combiner must not be null");
-
-    int capacity = Math.min(initialCapacity(iterableA), initialCapacity(iterableB));
-    List<R> result = new ArrayList<>(capacity);
-    Iterator<? extends A> iterA = iterableA.iterator();
-    Iterator<? extends B> iterB = iterableB.iterator();
-    while (iterA.hasNext() && iterB.hasNext()) {
-      result.add(combiner.apply(iterA.next(), iterB.next()));
-    }
-    return result;
+    int capacity =
+        Math.min(IterableOps.initialCapacity(iterableA), IterableOps.initialCapacity(iterableB));
+    return IterableOps.zip(iterableA, iterableB, combiner, () -> new ArrayList<>(capacity));
   }
 
   /**
@@ -559,7 +364,7 @@ public final class ListOps {
   public static <T> List<T> reverse(Iterable<? extends T> iterable) {
     Objects.requireNonNull(iterable, "iterable must not be null");
 
-    List<T> result = new ArrayList<>(initialCapacity(iterable));
+    List<T> result = new ArrayList<>(IterableOps.initialCapacity(iterable));
     for (T element : iterable) {
       result.add(element);
     }
@@ -589,7 +394,7 @@ public final class ListOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
-    int halfCapacity = (initialCapacity(iterable) + 1) / 2;
+    int halfCapacity = (IterableOps.initialCapacity(iterable) + 1) / 2;
     List<T> matching = new ArrayList<>(halfCapacity);
     List<T> notMatching = new ArrayList<>(halfCapacity);
 
@@ -630,18 +435,8 @@ public final class ListOps {
       Iterable<? extends T> iterable,
       Function<? super T, ? extends R> mapper,
       Predicate<? super R> predicate) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-
-    List<R> result = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      R mapped = mapper.apply(element);
-      if (predicate.test(mapped)) {
-        result.add(mapped);
-      }
-    }
-    return result;
+    return IterableOps.mapThenFilter(
+        iterable, mapper, predicate, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)));
   }
 
   /**
@@ -667,16 +462,7 @@ public final class ListOps {
       Iterable<? extends T> iterable,
       Predicate<? super T> predicate,
       Function<? super T, ? extends R> mapper) {
-    Objects.requireNonNull(iterable, "iterable must not be null");
-    Objects.requireNonNull(predicate, "predicate must not be null");
-    Objects.requireNonNull(mapper, "mapper must not be null");
-
-    List<R> result = new ArrayList<>(initialCapacity(iterable));
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        result.add(mapper.apply(element));
-      }
-    }
-    return result;
+    return IterableOps.filterThenMap(
+        iterable, predicate, mapper, () -> new ArrayList<>(IterableOps.initialCapacity(iterable)));
   }
 }

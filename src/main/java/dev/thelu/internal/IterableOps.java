@@ -2,8 +2,10 @@ package dev.thelu.internal;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.RandomAccess;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,6 +28,14 @@ public final class IterableOps {
     return (iterable instanceof Collection) ? ((Collection<?>) iterable).size() : DEFAULT_CAPACITY;
   }
 
+  /**
+   * Returns true if the iterable supports fast random access (like ArrayList). Index-based
+   * iteration is faster for these collections as it avoids iterator object creation.
+   */
+  private static boolean isRandomAccess(Iterable<?> iterable) {
+    return iterable instanceof List && iterable instanceof RandomAccess;
+  }
+
   /** Transforms each element using the mapper function. */
   public static <T, R, C extends Collection<R>> C map(
       Iterable<? extends T> iterable,
@@ -35,8 +45,15 @@ public final class IterableOps {
     Objects.requireNonNull(mapper, "mapper must not be null");
 
     C result = collectionFactory.get();
-    for (T element : iterable) {
-      result.add(mapper.apply(element));
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        result.add(mapper.apply(list.get(i)));
+      }
+    } else {
+      for (T element : iterable) {
+        result.add(mapper.apply(element));
+      }
     }
     return result;
   }
@@ -50,9 +67,19 @@ public final class IterableOps {
     Objects.requireNonNull(predicate, "predicate must not be null");
 
     C result = collectionFactory.get();
-    for (T element : iterable) {
-      if (predicate.test(element)) {
-        result.add(element);
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        T element = list.get(i);
+        if (predicate.test(element)) {
+          result.add(element);
+        }
+      }
+    } else {
+      for (T element : iterable) {
+        if (predicate.test(element)) {
+          result.add(element);
+        }
       }
     }
     return result;
@@ -90,8 +117,15 @@ public final class IterableOps {
     Objects.requireNonNull(accumulator, "accumulator must not be null");
 
     R result = identity;
-    for (T element : iterable) {
-      result = accumulator.apply(result, element);
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        result = accumulator.apply(result, list.get(i));
+      }
+    } else {
+      for (T element : iterable) {
+        result = accumulator.apply(result, element);
+      }
     }
     return result;
   }
@@ -122,6 +156,17 @@ public final class IterableOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        T element = list.get(i);
+        if (predicate.test(element)) {
+          return Optional.of(element);
+        }
+      }
+      return Optional.empty();
+    }
+
     for (T element : iterable) {
       if (predicate.test(element)) {
         return Optional.of(element);
@@ -135,6 +180,16 @@ public final class IterableOps {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
 
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        if (predicate.test(list.get(i))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     for (T element : iterable) {
       if (predicate.test(element)) {
         return true;
@@ -147,6 +202,16 @@ public final class IterableOps {
   public static <T> boolean all(Iterable<? extends T> iterable, Predicate<? super T> predicate) {
     Objects.requireNonNull(iterable, "iterable must not be null");
     Objects.requireNonNull(predicate, "predicate must not be null");
+
+    if (isRandomAccess(iterable)) {
+      List<? extends T> list = (List<? extends T>) iterable;
+      for (int i = 0, size = list.size(); i < size; i++) {
+        if (!predicate.test(list.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
 
     for (T element : iterable) {
       if (!predicate.test(element)) {
